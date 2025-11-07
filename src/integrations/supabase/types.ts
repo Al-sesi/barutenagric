@@ -14,16 +14,160 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      district_assignments: {
+        Row: {
+          district: string
+          id: string
+          sub_admin_email: string | null
+          sub_admin_user_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          district: string
+          id?: string
+          sub_admin_email?: string | null
+          sub_admin_user_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          district?: string
+          id?: string
+          sub_admin_email?: string | null
+          sub_admin_user_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      farmers: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          district: string
+          full_name: string
+          id: string
+          phone_number: string
+          primary_crop: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          district: string
+          full_name: string
+          id?: string
+          phone_number: string
+          primary_crop: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          district?: string
+          full_name?: string
+          id?: string
+          phone_number?: string
+          primary_crop?: string
+        }
+        Relationships: []
+      }
+      inquiries: {
+        Row: {
+          assigned_district: string | null
+          buyer_email: string
+          buyer_name: string
+          buyer_phone: string
+          created_at: string | null
+          crop: string
+          id: string
+          message: string | null
+          status: string | null
+          volume_mt: number
+        }
+        Insert: {
+          assigned_district?: string | null
+          buyer_email: string
+          buyer_name: string
+          buyer_phone: string
+          created_at?: string | null
+          crop: string
+          id?: string
+          message?: string | null
+          status?: string | null
+          volume_mt: number
+        }
+        Update: {
+          assigned_district?: string | null
+          buyer_email?: string
+          buyer_name?: string
+          buyer_phone?: string
+          created_at?: string | null
+          crop?: string
+          id?: string
+          message?: string | null
+          status?: string | null
+          volume_mt?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          district: string | null
+          full_name: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          district?: string | null
+          full_name?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string | null
+          district?: string | null
+          full_name?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          district: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          district?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          district?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_district: { Args: { _user_id: string }; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "general_admin" | "sub_admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +294,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["general_admin", "sub_admin"],
+    },
   },
 } as const

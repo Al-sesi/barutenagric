@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -46,14 +47,36 @@ const Contact = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log("Form submitted:", values);
-    setIsSubmitted(true);
-    toast({
-      title: "Inquiry Submitted Successfully",
-      description: "Our General Admin will contact you within 24 hours to finalize your order.",
-    });
-    form.reset();
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      // Extract numeric value from quantity string (e.g., "50 MT" -> 50)
+      const volumeMatch = values.quantity.match(/(\d+)/);
+      const volumeMt = volumeMatch ? parseInt(volumeMatch[1]) : 0;
+
+      const { error } = await supabase.from("inquiries").insert({
+        buyer_name: values.companyName,
+        buyer_email: values.email,
+        buyer_phone: values.phone,
+        crop: values.product,
+        volume_mt: volumeMt,
+        message: `Contact: ${values.contactPerson}\n\nQuantity: ${values.quantity}\n\n${values.message}`,
+      });
+
+      if (error) throw error;
+
+      setIsSubmitted(true);
+      toast({
+        title: "Inquiry Submitted Successfully",
+        description: "Our General Admin will contact you within 24 hours to finalize your order.",
+      });
+      form.reset();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit inquiry. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const contactInfo = [
