@@ -92,56 +92,59 @@ export default function FarmerRegistry() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div>
-            <CardTitle>Farmer Registry</CardTitle>
-            <CardDescription>Manage local farmer database</CardDescription>
+            <CardTitle className="text-lg md:text-xl">Farmer Registry</CardTitle>
+            <CardDescription className="text-sm">Manage local farmer database</CardDescription>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button>Register Farmer</Button>
+              <Button className="h-12 w-full md:w-auto">Register Farmer</Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-[95vw] md:max-w-md max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Register New Farmer</DialogTitle>
-                <DialogDescription>Add a farmer to the registry</DialogDescription>
+                <DialogTitle className="text-lg md:text-xl">Register New Farmer</DialogTitle>
+                <DialogDescription className="text-sm">Add a farmer to the registry</DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="full_name">Full Name</Label>
+                  <Label htmlFor="full_name" className="text-sm md:text-base">Full Name</Label>
                   <Input
                     id="full_name"
                     value={formData.full_name}
                     onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                    className="h-12"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone_number">Phone Number</Label>
+                  <Label htmlFor="phone_number" className="text-sm md:text-base">Phone Number</Label>
                   <Input
                     id="phone_number"
                     value={formData.phone_number}
                     onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+                    className="h-12"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="primary_crop">Primary Crop</Label>
+                  <Label htmlFor="primary_crop" className="text-sm md:text-base">Primary Crop</Label>
                   <Input
                     id="primary_crop"
                     value={formData.primary_crop}
                     onChange={(e) => setFormData({ ...formData, primary_crop: e.target.value })}
+                    className="h-12"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="district">District</Label>
+                  <Label htmlFor="district" className="text-sm md:text-base">District</Label>
                   <Select
                     value={formData.district}
                     onValueChange={(value) => setFormData({ ...formData, district: value })}
                     disabled={role === "sub_admin"}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-12">
                       <SelectValue placeholder="Select District" />
                     </SelectTrigger>
                     <SelectContent>
@@ -153,7 +156,7 @@ export default function FarmerRegistry() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full h-12">
                   Register Farmer
                 </Button>
               </form>
@@ -162,28 +165,32 @@ export default function FarmerRegistry() {
         </div>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Primary Crop</TableHead>
-              <TableHead>District</TableHead>
-              <TableHead>Registered</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {farmers.map((farmer) => (
-              <TableRow key={farmer.id}>
-                <TableCell className="font-medium">{farmer.full_name}</TableCell>
-                <TableCell>{farmer.phone_number}</TableCell>
-                <TableCell>{farmer.primary_crop}</TableCell>
-                <TableCell>{farmer.district}</TableCell>
-                <TableCell>{new Date(farmer.created_at).toLocaleDateString()}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <div className="overflow-x-auto -mx-4 md:mx-0">
+          <div className="inline-block min-w-full align-middle">
+            <Table className="min-w-[700px]">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="whitespace-nowrap">Name</TableHead>
+                  <TableHead className="whitespace-nowrap">Phone</TableHead>
+                  <TableHead className="whitespace-nowrap">Primary Crop</TableHead>
+                  <TableHead className="whitespace-nowrap">District</TableHead>
+                  <TableHead className="whitespace-nowrap">Registered</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {farmers.map((farmer) => (
+                  <TableRow key={farmer.id}>
+                    <TableCell className="font-medium whitespace-nowrap">{farmer.full_name}</TableCell>
+                    <TableCell className="whitespace-nowrap">{farmer.phone_number}</TableCell>
+                    <TableCell className="whitespace-nowrap">{farmer.primary_crop}</TableCell>
+                    <TableCell className="whitespace-nowrap">{farmer.district}</TableCell>
+                    <TableCell className="whitespace-nowrap">{new Date(farmer.created_at).toLocaleDateString()}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

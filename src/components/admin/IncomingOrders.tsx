@@ -86,53 +86,57 @@ export default function IncomingOrders() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Incoming Orders</CardTitle>
-        <CardDescription>Manage bulk inquiries from buyers</CardDescription>
+        <CardTitle className="text-lg md:text-xl">Incoming Orders</CardTitle>
+        <CardDescription className="text-sm">Manage bulk inquiries from buyers</CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Buyer Name</TableHead>
-              <TableHead>Crop</TableHead>
-              <TableHead>Volume (MT)</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Assigned District</TableHead>
-              <TableHead>Date</TableHead>
-              {role === "general_admin" && <TableHead>Actions</TableHead>}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {inquiries.map((inquiry) => (
-              <TableRow key={inquiry.id}>
-                <TableCell className="font-medium">{inquiry.buyer_name}</TableCell>
-                <TableCell>{inquiry.crop}</TableCell>
-                <TableCell>{inquiry.volume_mt} MT</TableCell>
-                <TableCell>{getStatusBadge(inquiry.status)}</TableCell>
-                <TableCell>{inquiry.assigned_district || "—"}</TableCell>
-                <TableCell>{new Date(inquiry.created_at).toLocaleDateString()}</TableCell>
-                {role === "general_admin" && (
-                  <TableCell>
-                    {inquiry.status === "new" && (
-                      <Select onValueChange={(value) => handleAssignDistrict(inquiry.id, value)}>
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="Assign District" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {districts.map((district) => (
-                            <SelectItem key={district} value={district}>
-                              {district}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+        <div className="overflow-x-auto -mx-4 md:mx-0">
+          <div className="inline-block min-w-full align-middle">
+            <Table className="min-w-[800px]">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="whitespace-nowrap">Buyer Name</TableHead>
+                  <TableHead className="whitespace-nowrap">Crop</TableHead>
+                  <TableHead className="whitespace-nowrap">Volume (MT)</TableHead>
+                  <TableHead className="whitespace-nowrap">Status</TableHead>
+                  <TableHead className="whitespace-nowrap">Assigned District</TableHead>
+                  <TableHead className="whitespace-nowrap">Date</TableHead>
+                  {role === "general_admin" && <TableHead className="whitespace-nowrap">Actions</TableHead>}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {inquiries.map((inquiry) => (
+                  <TableRow key={inquiry.id}>
+                    <TableCell className="font-medium whitespace-nowrap">{inquiry.buyer_name}</TableCell>
+                    <TableCell className="whitespace-nowrap">{inquiry.crop}</TableCell>
+                    <TableCell className="whitespace-nowrap">{inquiry.volume_mt} MT</TableCell>
+                    <TableCell>{getStatusBadge(inquiry.status)}</TableCell>
+                    <TableCell className="whitespace-nowrap">{inquiry.assigned_district || "—"}</TableCell>
+                    <TableCell className="whitespace-nowrap">{new Date(inquiry.created_at).toLocaleDateString()}</TableCell>
+                    {role === "general_admin" && (
+                      <TableCell>
+                        {inquiry.status === "new" && (
+                          <Select onValueChange={(value) => handleAssignDistrict(inquiry.id, value)}>
+                            <SelectTrigger className="w-full min-w-[180px] h-10">
+                              <SelectValue placeholder="Assign District" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {districts.map((district) => (
+                                <SelectItem key={district} value={district}>
+                                  {district}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </TableCell>
                     )}
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

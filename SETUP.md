@@ -18,10 +18,17 @@ The admin portal is accessible at a secret URL:
 
 ### Step 2: Create Admin Accounts
 
-Since the authentication system is now live, you need to create admin user accounts:
+**Primary General Admin Account:**
+- Email: `Barutenagriculture@gmail.com`
+- Password: `Baruten1010`
 
-1. **For testing purposes**, you can temporarily create accounts through the login page
-2. **For production**, you should create accounts and then assign roles manually
+To set up this account:
+1. Visit `/admin-login` and sign up with the above credentials
+2. After signing up, assign the `general_admin` role (see Step 3)
+
+For additional admin accounts:
+1. **For testing purposes**, you can create accounts through the login page
+2. **For production**, create accounts and then assign roles manually
 
 ### Step 3: Assign Roles
 

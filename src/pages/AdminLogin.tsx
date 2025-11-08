@@ -32,36 +32,38 @@ export default function AdminLogin() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-primary">Admin Portal</CardTitle>
-          <CardDescription>Baruten Agricultural Portal</CardDescription>
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader className="text-center space-y-2">
+          <CardTitle className="text-xl md:text-2xl font-bold text-primary">Admin Portal</CardTitle>
+          <CardDescription className="text-sm">Baruten Agricultural Portal</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-sm md:text-base">Email</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@baruten.com"
+                className="h-12"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-sm md:text-base">Password</Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
+                className="h-12"
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full h-12" disabled={loading}>
               {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
