@@ -53,6 +53,7 @@ const Contact = () => {
       const volumeMatch = values.quantity.match(/(\d+)/);
       const volumeMt = volumeMatch ? parseInt(volumeMatch[1]) : 0;
 
+      // Save to database
       const { error } = await supabase.from("inquiries").insert({
         buyer_name: values.companyName,
         buyer_email: values.email,
@@ -63,6 +64,24 @@ const Contact = () => {
       });
 
       if (error) throw error;
+
+      // Send email notification
+      try {
+        await supabase.functions.invoke("send-inquiry-email", {
+          body: {
+            companyName: values.companyName,
+            contactPerson: values.contactPerson,
+            email: values.email,
+            phone: values.phone,
+            product: values.product,
+            quantity: values.quantity,
+            message: values.message,
+          },
+        });
+      } catch (emailError) {
+        console.error("Email notification failed:", emailError);
+        // Don't block the submission if email fails
+      }
 
       setIsSubmitted(true);
       toast({
@@ -111,10 +130,10 @@ const Contact = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="bg-primary text-primary-foreground py-16">
-        <div className="container text-center">
-          <h1 className="text-5xl font-bold mb-4">Connect with Our Procurement Team</h1>
-          <p className="text-xl opacity-95 max-w-3xl mx-auto">
+      <section className="bg-primary text-primary-foreground py-12 sm:py-16">
+        <div className="container text-center px-4">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4">Connect with Our Procurement Team</h1>
+          <p className="text-base sm:text-lg lg:text-xl opacity-95 max-w-3xl mx-auto">
             Ready to place a bulk order? Our team is standing by to discuss your requirements
             and provide competitive pricing for premium West African produce.
           </p>
@@ -122,9 +141,9 @@ const Contact = () => {
       </section>
 
       {/* Contact Information Cards */}
-      <section className="py-12 bg-muted/30">
-        <div className="container">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <section className="py-8 sm:py-12 bg-muted/30">
+        <div className="container px-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {contactInfo.map((info, index) => (
               <Card key={index}>
                 <CardContent className="pt-6 pb-6 text-center">
@@ -154,8 +173,8 @@ const Contact = () => {
       </section>
 
       {/* Contact Form */}
-      <section className="py-16">
-        <div className="container max-w-3xl">
+      <section className="py-12 sm:py-16">
+        <div className="container max-w-3xl px-4">
           <Card>
             <CardContent className="pt-8 pb-8">
               <h2 className="text-3xl font-bold mb-6 text-foreground text-center">

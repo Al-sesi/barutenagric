@@ -39,10 +39,10 @@ const Process = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="bg-primary text-primary-foreground py-16">
-        <div className="container text-center">
-          <h1 className="text-5xl font-bold mb-4">A Transparent Supply Chain, Built on Trust</h1>
-          <p className="text-xl opacity-95 max-w-3xl mx-auto">
+      <section className="bg-primary text-primary-foreground py-12 sm:py-16">
+        <div className="container text-center px-4">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4">A Transparent Supply Chain, Built on Trust</h1>
+          <p className="text-base sm:text-lg lg:text-xl opacity-95 max-w-3xl mx-auto">
             Our streamlined process ensures efficiency, quality, and fair compensation
             for every stakeholder in the agricultural value chain
           </p>
@@ -50,9 +50,9 @@ const Process = () => {
       </section>
 
       {/* Process Steps */}
-      <section className="py-20">
-        <div className="container">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <section className="py-12 sm:py-16 lg:py-20">
+        <div className="container px-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {steps.map((step, index) => (
               <div key={index} className="relative">
                 {index < steps.length - 1 && (

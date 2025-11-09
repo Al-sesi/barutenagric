@@ -39,7 +39,7 @@ const Home = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[500px] sm:h-[600px] lg:h-[700px] flex items-center justify-center overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${heroImage})` }}
@@ -47,16 +47,16 @@ const Home = () => {
           <div className="absolute inset-0 bg-primary/80"></div>
         </div>
         
-        <div className="relative z-10 container text-center text-primary-foreground">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">
+        <div className="relative z-10 container text-center text-primary-foreground px-4">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">
             Baruten: Your Direct Source for Premium West African Produce
           </h1>
-          <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-95">
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-6 sm:mb-8 max-w-3xl mx-auto opacity-95">
             Leveraging technology for transparent supply chains and guaranteed quality,
             delivering fresh crops directly from our community to your company.
           </p>
           <Link to="/produce">
-            <Button size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 text-lg px-8 py-6 font-semibold">
+            <Button size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 font-semibold h-auto">
               Explore Our Premium Crops
             </Button>
           </Link>
@@ -64,12 +64,12 @@ const Home = () => {
       </section>
 
       {/* Why Choose Baruten Section */}
-      <section className="py-20 bg-muted/30">
-        <div className="container">
-          <h2 className="text-4xl font-bold text-center mb-4 text-foreground">
+      <section className="py-12 sm:py-16 lg:py-20 bg-muted/30">
+        <div className="container px-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-3 sm:mb-4 text-foreground">
             Why Choose Baruten?
           </h2>
-          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+          <p className="text-center text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto text-sm sm:text-base">
             Our commitment to excellence spans every aspect of agricultural supply
           </p>
           
@@ -94,12 +94,12 @@ const Home = () => {
       </section>
 
       {/* Featured Products Section */}
-      <section className="py-20">
-        <div className="container">
-          <h2 className="text-4xl font-bold text-center mb-4 text-foreground">
+      <section className="py-12 sm:py-16 lg:py-20">
+        <div className="container px-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-3 sm:mb-4 text-foreground">
             Featured Products
           </h2>
-          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+          <p className="text-center text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto text-sm sm:text-base">
             Discover our most sought-after premium crops
           </p>
           

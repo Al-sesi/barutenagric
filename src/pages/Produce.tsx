@@ -42,10 +42,10 @@ const Produce = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="bg-primary text-primary-foreground py-16">
-        <div className="container text-center">
-          <h1 className="text-5xl font-bold mb-4">Our Premium Produce</h1>
-          <p className="text-xl opacity-95 max-w-3xl mx-auto">
+      <section className="bg-primary text-primary-foreground py-12 sm:py-16">
+        <div className="container text-center px-4">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4">Our Premium Produce</h1>
+          <p className="text-base sm:text-lg lg:text-xl opacity-95 max-w-3xl mx-auto">
             Quality crops directly from the four districts of Baruten: 
             Ilesha Baruba, Gwanara, Okuta, and Yashikira
           </p>
@@ -53,18 +53,18 @@ const Produce = () => {
       </section>
 
       {/* Filter Section */}
-      <section className="py-8 bg-muted/30 border-b">
-        <div className="container">
-          <div className="flex flex-wrap gap-3 justify-center">
+      <section className="py-6 sm:py-8 bg-muted/30 border-b">
+        <div className="container px-4">
+          <div className="flex flex-wrap gap-2 sm:gap-3 justify-center">
             {categories.map((category) => (
               <Button
                 key={category.id}
                 onClick={() => setFilter(category.id)}
                 variant={filter === category.id ? "default" : "outline"}
-                className={filter === category.id 
+                className={`text-xs sm:text-sm h-9 sm:h-10 ${filter === category.id 
                   ? "bg-accent text-accent-foreground hover:bg-accent/90" 
                   : "border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                }
+                }`}
               >
                 {category.label}
               </Button>
@@ -74,9 +74,9 @@ const Produce = () => {
       </section>
 
       {/* Products Grid */}
-      <section className="py-16">
-        <div className="container">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <section className="py-12 sm:py-16">
+        <div className="container px-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {filteredProducts.map((product, index) => (
               <ProductCard
                 key={index}

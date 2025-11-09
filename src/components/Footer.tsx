@@ -3,8 +3,8 @@ import { Mail, Phone, MapPin } from "lucide-react";
 const Footer = () => {
   return (
     <footer className="bg-primary text-primary-foreground">
-      <div className="container py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="container py-8 sm:py-12 px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
           <div>
             <h3 className="font-bold text-lg mb-4">Baruten Agricultural Portal</h3>
             <p className="text-sm opacity-90">
