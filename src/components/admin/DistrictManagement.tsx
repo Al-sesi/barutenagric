@@ -60,10 +60,12 @@ export default function DistrictManagement() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg md:text-xl">District Sub-Admin Management</CardTitle>
-        <CardDescription className="text-sm">Assign sub-administrators to districts (General Admin only)</CardDescription>
+    <Card className="border-secondary/30">
+      <CardHeader className="bg-secondary/10">
+        <CardTitle className="text-lg md:text-xl text-primary">District Management Console</CardTitle>
+        <CardDescription className="text-sm">
+          Configure Sub-Admin assignments for each district (General Admin only)
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto -mx-4 md:mx-0">

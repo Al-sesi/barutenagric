@@ -84,10 +84,14 @@ export default function IncomingOrders() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg md:text-xl">Incoming Orders</CardTitle>
-        <CardDescription className="text-sm">Manage bulk inquiries from buyers</CardDescription>
+    <Card className="border-primary/20">
+      <CardHeader className="bg-primary/5">
+        <CardTitle className="text-lg md:text-xl text-primary">Incoming Orders</CardTitle>
+        <CardDescription className="text-sm">
+          {role === "general_admin" 
+            ? "Assign orders to districts and manage all incoming requests" 
+            : "View and fulfill orders assigned to your district"}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto -mx-4 md:mx-0">

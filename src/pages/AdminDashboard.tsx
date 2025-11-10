@@ -41,16 +41,26 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card shadow-sm">
+      <header className="border-b-2 border-secondary bg-card shadow-lg">
         <div className="container mx-auto px-4 py-3 md:py-4">
-          <div className="flex justify-between items-center gap-2">
+          <div className="flex justify-between items-center gap-2 md:gap-4">
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg md:text-2xl font-bold text-primary truncate">Baruten Admin Portal</h1>
-              <p className="text-xs md:text-sm text-muted-foreground">
+              <h1 className="text-base md:text-2xl font-bold text-primary truncate">
+                Baruten Agricultural Portal - Admin
+              </h1>
+              <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+                {user?.email || "admin@baruten.com"}
+              </p>
+              <p className="text-xs text-secondary font-medium">
                 {role === "general_admin" ? "General Administrator" : "Sub-Administrator"}
               </p>
             </div>
-            <Button variant="outline" size={isMobile ? "sm" : "default"} onClick={handleSignOut} className="shrink-0">
+            <Button 
+              variant="outline" 
+              size={isMobile ? "sm" : "default"} 
+              onClick={handleSignOut} 
+              className="shrink-0 border-primary hover:bg-primary hover:text-primary-foreground"
+            >
               <LogOut className="h-4 w-4 md:mr-2" />
               <span className="hidden md:inline">Sign Out</span>
             </Button>

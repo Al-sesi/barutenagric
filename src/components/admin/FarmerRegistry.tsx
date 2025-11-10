@@ -90,12 +90,16 @@ export default function FarmerRegistry() {
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="border-primary/20">
+      <CardHeader className="bg-primary/5">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div>
-            <CardTitle className="text-lg md:text-xl">Farmer Registry</CardTitle>
-            <CardDescription className="text-sm">Manage local farmer database</CardDescription>
+            <CardTitle className="text-lg md:text-xl text-primary">Farmer Registry</CardTitle>
+            <CardDescription className="text-sm">
+              {role === "general_admin" 
+                ? "Register and manage farmers across all districts" 
+                : "Register and view farmers in your district"}
+            </CardDescription>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
