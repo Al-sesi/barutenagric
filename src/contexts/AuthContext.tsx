@@ -25,20 +25,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchUserRole = async (userId: string) => {
-    const { data, error } = await supabase
-      .from("user_roles")
-      .select("role, district")
-      .eq("user_id", userId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role, district")
+        .eq("user_id", userId)
+        .maybeSingle();
 
-    if (error) {
-      console.error("Error fetching user role:", error);
-      return;
-    }
+      if (error) {
+        console.error("Error fetching user role:", error);
+        setRole(null);
+        setDistrict(null);
+        return;
+      }
 
-    if (data) {
-      setRole(data.role as UserRole);
-      setDistrict(data.district);
+      if (data) {
+        console.log("User role fetched:", data);
+        setRole(data.role as UserRole);
+        setDistrict(data.district);
+      } else {
+        console.log("No role found for user");
+        setRole(null);
+        setDistrict(null);
+      }
+    } catch (err) {
+      console.error("Exception fetching user role:", err);
+      setRole(null);
+      setDistrict(null);
     }
   };
 
@@ -46,13 +59,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("Auth state changed:", event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          // Add a small delay to ensure database operations complete
           setTimeout(() => {
             fetchUserRole(session.user.id);
-          }, 0);
+          }, 100);
         } else {
           setRole(null);
           setDistrict(null);
@@ -63,6 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session check:", session?.user?.id);
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {

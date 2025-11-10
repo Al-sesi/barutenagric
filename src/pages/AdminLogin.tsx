@@ -37,14 +37,18 @@ export default function AdminLogin() {
       }
 
       if (data.user) {
+        console.log("New user created:", data.user.id);
+        
         // Auto-assign general_admin role
-        const { error: roleError } = await supabase
+        const { data: roleData, error: roleError } = await supabase
           .from("user_roles")
           .insert({
             user_id: data.user.id,
             role: "general_admin",
             district: null
-          });
+          })
+          .select()
+          .single();
 
         if (roleError) {
           console.error("Role assignment error:", roleError);
@@ -53,15 +57,18 @@ export default function AdminLogin() {
           return;
         }
 
+        console.log("Role assigned successfully:", roleData);
+
         // Automatically sign in after successful signup and role assignment
         toast.success("Account created successfully! Signing you in...");
         
-        // Small delay to ensure role is committed to database
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Longer delay to ensure role is fully committed to database
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
         const { error: signInError } = await signIn(email, password);
         
         if (signInError) {
+          console.error("Auto sign-in error:", signInError);
           toast.error("Account created but auto sign-in failed. Please sign in manually.");
           setIsSignUp(false);
           setPassword("");
@@ -69,6 +76,7 @@ export default function AdminLogin() {
           return;
         }
 
+        console.log("Sign in successful, navigating to dashboard");
         toast.success("Login successful!");
         navigate("/admin-dashboard");
       }
