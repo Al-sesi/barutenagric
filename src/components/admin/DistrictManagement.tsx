@@ -4,7 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { UserPlus } from "lucide-react";
 
 interface DistrictAssignment {
   id: string;
@@ -13,10 +16,29 @@ interface DistrictAssignment {
   sub_admin_email: string | null;
 }
 
+const DISTRICTS = [
+  "Baruten Central",
+  "Gwanara",
+  "Kaiama",
+  "Kakabu",
+  "Okuta",
+  "Sinawu",
+  "Gwanabe",
+  "Ilesha",
+  "Yashikira"
+];
+
 export default function DistrictManagement() {
   const [assignments, setAssignments] = useState<DistrictAssignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingEmail, setEditingEmail] = useState<Record<string, string>>({});
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [creatingSubAdmin, setCreatingSubAdmin] = useState(false);
+  const [newSubAdmin, setNewSubAdmin] = useState({
+    email: "",
+    password: "",
+    district: ""
+  });
 
   const fetchAssignments = async () => {
     const { data, error } = await supabase
@@ -55,6 +77,67 @@ export default function DistrictManagement() {
     fetchAssignments();
   };
 
+  const handleCreateSubAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreatingSubAdmin(true);
+
+    // Create auth user
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: newSubAdmin.email,
+      password: newSubAdmin.password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/admin-dashboard`
+      }
+    });
+
+    if (authError) {
+      toast.error(authError.message);
+      setCreatingSubAdmin(false);
+      return;
+    }
+
+    if (!authData.user) {
+      toast.error("Failed to create user");
+      setCreatingSubAdmin(false);
+      return;
+    }
+
+    // Assign sub_admin role
+    const { error: roleError } = await supabase
+      .from("user_roles")
+      .insert({
+        user_id: authData.user.id,
+        role: "sub_admin",
+        district: newSubAdmin.district
+      });
+
+    if (roleError) {
+      toast.error("Failed to assign role");
+      console.error(roleError);
+      setCreatingSubAdmin(false);
+      return;
+    }
+
+    // Update district assignment
+    const { error: assignmentError } = await supabase
+      .from("district_assignments")
+      .update({
+        sub_admin_user_id: authData.user.id,
+        sub_admin_email: newSubAdmin.email
+      })
+      .eq("district", newSubAdmin.district);
+
+    if (assignmentError) {
+      console.error("Failed to update district assignment:", assignmentError);
+    }
+
+    toast.success("Sub-admin created successfully!");
+    setNewSubAdmin({ email: "", password: "", district: "" });
+    setShowCreateForm(false);
+    setCreatingSubAdmin(false);
+    fetchAssignments();
+  };
+
   if (loading) {
     return (
       <Card className="border-secondary/30">
@@ -66,55 +149,129 @@ export default function DistrictManagement() {
   }
 
   return (
-    <Card className="border-secondary/30">
-      <CardHeader className="bg-secondary/10">
-        <CardTitle className="text-lg md:text-xl text-primary">District Management Console</CardTitle>
-        <CardDescription className="text-sm">
-          Configure Sub-Admin assignments for each district (General Admin only)
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto -mx-4 md:mx-0">
-          <div className="inline-block min-w-full align-middle">
-            <Table className="min-w-[600px]">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="whitespace-nowrap">District</TableHead>
-                  <TableHead className="whitespace-nowrap">Sub-Admin Email</TableHead>
-                  <TableHead className="whitespace-nowrap">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {assignments.map((assignment) => (
-                  <TableRow key={assignment.id}>
-                    <TableCell className="font-medium whitespace-nowrap">{assignment.district}</TableCell>
-                    <TableCell>
-                      <Input
-                        type="email"
-                        placeholder="sub-admin@example.com"
-                        defaultValue={assignment.sub_admin_email || ""}
-                        onChange={(e) =>
-                          setEditingEmail({ ...editingEmail, [assignment.id]: e.target.value })
-                        }
-                        className="h-10 min-w-[200px]"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        onClick={() => handleUpdateEmail(assignment.id, assignment.district)}
-                        size="sm"
-                        className="h-10 w-full md:w-auto"
-                      >
-                        Update
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+    <div className="space-y-6">
+      <Card className="border-secondary/30">
+        <CardHeader className="bg-secondary/10">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <CardTitle className="text-lg md:text-xl text-primary">Create Sub-Admin Account</CardTitle>
+              <CardDescription className="text-sm">
+                Create new sub-administrator accounts for districts
+              </CardDescription>
+            </div>
+            <Button 
+              onClick={() => setShowCreateForm(!showCreateForm)}
+              variant={showCreateForm ? "outline" : "default"}
+              className="w-full md:w-auto"
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              {showCreateForm ? "Cancel" : "Create Sub-Admin"}
+            </Button>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardHeader>
+        {showCreateForm && (
+          <CardContent className="pt-6">
+            <form onSubmit={handleCreateSubAdmin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="sub-email">Email</Label>
+                <Input
+                  id="sub-email"
+                  type="email"
+                  value={newSubAdmin.email}
+                  onChange={(e) => setNewSubAdmin({ ...newSubAdmin, email: e.target.value })}
+                  placeholder="subadmin@example.com"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="sub-password">Password</Label>
+                <Input
+                  id="sub-password"
+                  type="password"
+                  value={newSubAdmin.password}
+                  onChange={(e) => setNewSubAdmin({ ...newSubAdmin, password: e.target.value })}
+                  placeholder="••••••••"
+                  required
+                  minLength={6}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="sub-district">District</Label>
+                <Select
+                  value={newSubAdmin.district}
+                  onValueChange={(value) => setNewSubAdmin({ ...newSubAdmin, district: value })}
+                  required
+                >
+                  <SelectTrigger id="sub-district">
+                    <SelectValue placeholder="Select a district" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DISTRICTS.map((district) => (
+                      <SelectItem key={district} value={district}>
+                        {district}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button type="submit" className="w-full" disabled={creatingSubAdmin}>
+                {creatingSubAdmin ? "Creating..." : "Create Sub-Admin Account"}
+              </Button>
+            </form>
+          </CardContent>
+        )}
+      </Card>
+
+      <Card className="border-secondary/30">
+        <CardHeader className="bg-secondary/10">
+          <CardTitle className="text-lg md:text-xl text-primary">District Assignments</CardTitle>
+          <CardDescription className="text-sm">
+            View and update sub-administrator assignments for each district
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto -mx-4 md:mx-0">
+            <div className="inline-block min-w-full align-middle">
+              <Table className="min-w-[600px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="whitespace-nowrap">District</TableHead>
+                    <TableHead className="whitespace-nowrap">Sub-Admin Email</TableHead>
+                    <TableHead className="whitespace-nowrap">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {assignments.map((assignment) => (
+                    <TableRow key={assignment.id}>
+                      <TableCell className="font-medium whitespace-nowrap">{assignment.district}</TableCell>
+                      <TableCell>
+                        <Input
+                          type="email"
+                          placeholder="sub-admin@example.com"
+                          defaultValue={assignment.sub_admin_email || ""}
+                          onChange={(e) =>
+                            setEditingEmail({ ...editingEmail, [assignment.id]: e.target.value })
+                          }
+                          className="h-10 min-w-[200px]"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          onClick={() => handleUpdateEmail(assignment.id, assignment.district)}
+                          size="sm"
+                          className="h-10 w-full md:w-auto"
+                        >
+                          Update
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

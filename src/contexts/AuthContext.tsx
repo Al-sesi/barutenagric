@@ -26,6 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUserRole = async (userId: string) => {
     try {
+      console.log("Fetching role for user:", userId);
       const { data, error } = await supabase
         .from("user_roles")
         .select("role, district")
@@ -36,11 +37,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error("Error fetching user role:", error);
         setRole(null);
         setDistrict(null);
+        setLoading(false);
         return;
       }
 
       if (data) {
-        console.log("User role fetched:", data);
+        console.log("User role fetched successfully:", data);
         setRole(data.role as UserRole);
         setDistrict(data.district);
       } else {
@@ -48,10 +50,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setRole(null);
         setDistrict(null);
       }
+      setLoading(false);
     } catch (err) {
       console.error("Exception fetching user role:", err);
       setRole(null);
       setDistrict(null);
+      setLoading(false);
     }
   };
 
@@ -64,15 +68,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Add a small delay to ensure database operations complete
-          setTimeout(() => {
-            fetchUserRole(session.user.id);
-          }, 100);
+          // Keep loading true while fetching role
+          setLoading(true);
+          await fetchUserRole(session.user.id);
         } else {
           setRole(null);
           setDistrict(null);
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
@@ -83,8 +86,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchUserRole(session.user.id);
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();

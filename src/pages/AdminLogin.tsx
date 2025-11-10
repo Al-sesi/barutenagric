@@ -63,7 +63,7 @@ export default function AdminLogin() {
         toast.success("Account created successfully! Signing you in...");
         
         // Longer delay to ensure role is fully committed to database
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 1500));
         
         const { error: signInError } = await signIn(email, password);
         
