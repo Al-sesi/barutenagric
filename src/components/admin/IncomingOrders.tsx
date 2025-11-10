@@ -70,6 +70,20 @@ export default function IncomingOrders() {
     toast.success("Order assigned successfully");
   };
 
+  const handleMarkFulfilled = async (inquiryId: string) => {
+    const { error } = await supabase
+      .from("inquiries")
+      .update({ status: "fulfilled" })
+      .eq("id", inquiryId);
+
+    if (error) {
+      toast.error("Failed to update status");
+      return;
+    }
+
+    toast.success("Order marked as fulfilled");
+  };
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "outline"> = {
       new: "default",
@@ -80,7 +94,13 @@ export default function IncomingOrders() {
   };
 
   if (loading) {
-    return <p>Loading orders...</p>;
+    return (
+      <Card className="border-primary/20">
+        <CardContent className="py-8">
+          <p className="text-center text-muted-foreground">Loading orders...</p>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -105,36 +125,43 @@ export default function IncomingOrders() {
                   <TableHead className="whitespace-nowrap">Status</TableHead>
                   <TableHead className="whitespace-nowrap">Assigned District</TableHead>
                   <TableHead className="whitespace-nowrap">Date</TableHead>
-                  {role === "general_admin" && <TableHead className="whitespace-nowrap">Actions</TableHead>}
+                  <TableHead className="whitespace-nowrap">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {inquiries.map((inquiry) => (
                   <TableRow key={inquiry.id}>
-                    <TableCell className="font-medium whitespace-nowrap">{inquiry.buyer_name}</TableCell>
+                     <TableCell className="font-medium whitespace-nowrap">{inquiry.buyer_name}</TableCell>
                     <TableCell className="whitespace-nowrap">{inquiry.crop}</TableCell>
                     <TableCell className="whitespace-nowrap">{inquiry.volume_mt} MT</TableCell>
                     <TableCell>{getStatusBadge(inquiry.status)}</TableCell>
                     <TableCell className="whitespace-nowrap">{inquiry.assigned_district || "—"}</TableCell>
                     <TableCell className="whitespace-nowrap">{new Date(inquiry.created_at).toLocaleDateString()}</TableCell>
-                    {role === "general_admin" && (
-                      <TableCell>
-                        {inquiry.status === "new" && (
-                          <Select onValueChange={(value) => handleAssignDistrict(inquiry.id, value)}>
-                            <SelectTrigger className="w-full min-w-[180px] h-10">
-                              <SelectValue placeholder="Assign District" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {districts.map((district) => (
-                                <SelectItem key={district} value={district}>
-                                  {district}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </TableCell>
-                    )}
+                    <TableCell>
+                      {role === "general_admin" && inquiry.status === "new" && (
+                        <Select onValueChange={(value) => handleAssignDistrict(inquiry.id, value)}>
+                          <SelectTrigger className="w-full min-w-[180px] h-10">
+                            <SelectValue placeholder="Assign District" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {districts.map((district) => (
+                              <SelectItem key={district} value={district}>
+                                {district}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      {role === "sub_admin" && inquiry.status === "assigned" && (
+                        <Button
+                          onClick={() => handleMarkFulfilled(inquiry.id)}
+                          size="sm"
+                          className="h-10 w-full md:w-auto"
+                        >
+                          Mark Fulfilled
+                        </Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

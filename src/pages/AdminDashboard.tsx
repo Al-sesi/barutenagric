@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LogOut, Menu } from "lucide-react";
+import { toast } from "sonner";
 import IncomingOrders from "@/components/admin/IncomingOrders";
 import FarmerRegistry from "@/components/admin/FarmerRegistry";
 import DistrictManagement from "@/components/admin/DistrictManagement";
@@ -19,8 +20,11 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (!loading && !user) {
       navigate("/admin-login");
+    } else if (!loading && user && !role) {
+      toast.error("No admin role assigned to this account. Please contact support.");
+      handleSignOut();
     }
-  }, [user, loading, navigate]);
+  }, [user, loading, role, navigate]);
 
   const handleSignOut = async () => {
     await signOut();

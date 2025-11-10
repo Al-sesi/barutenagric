@@ -36,7 +36,22 @@ export default function AdminLogin() {
       }
 
       if (data.user) {
-        toast.success("Account created! Please sign in and contact admin to assign your role.");
+        // Auto-assign general_admin role
+        const { error: roleError } = await supabase
+          .from("user_roles")
+          .insert({
+            user_id: data.user.id,
+            role: "general_admin",
+            district: null
+          });
+
+        if (roleError) {
+          console.error("Role assignment error:", roleError);
+          toast.error("Account created but role assignment failed. Please try signing in.");
+        } else {
+          toast.success("Account created successfully! You can now sign in.");
+        }
+        
         setIsSignUp(false);
         setPassword("");
       }

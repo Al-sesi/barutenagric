@@ -86,7 +86,13 @@ export default function FarmerRegistry() {
   };
 
   if (loading) {
-    return <p>Loading farmers...</p>;
+    return (
+      <Card className="border-primary/20">
+        <CardContent className="py-8">
+          <p className="text-center text-muted-foreground">Loading farmers...</p>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (

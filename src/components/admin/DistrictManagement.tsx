@@ -56,7 +56,13 @@ export default function DistrictManagement() {
   };
 
   if (loading) {
-    return <p>Loading district assignments...</p>;
+    return (
+      <Card className="border-secondary/30">
+        <CardContent className="py-8">
+          <p className="text-center text-muted-foreground">Loading district assignments...</p>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
