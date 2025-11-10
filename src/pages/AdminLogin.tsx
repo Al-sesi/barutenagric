@@ -21,6 +21,7 @@ export default function AdminLogin() {
     setLoading(true);
 
     if (isSignUp) {
+      // Sign up the user
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -47,18 +48,35 @@ export default function AdminLogin() {
 
         if (roleError) {
           console.error("Role assignment error:", roleError);
-          toast.error("Account created but role assignment failed. Please try signing in.");
-        } else {
-          toast.success("Account created successfully! You can now sign in.");
+          toast.error("Account created but role assignment failed. Please contact support.");
+          setLoading(false);
+          return;
         }
+
+        // Automatically sign in after successful signup and role assignment
+        toast.success("Account created successfully! Signing you in...");
         
-        setIsSignUp(false);
-        setPassword("");
+        // Small delay to ensure role is committed to database
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const { error: signInError } = await signIn(email, password);
+        
+        if (signInError) {
+          toast.error("Account created but auto sign-in failed. Please sign in manually.");
+          setIsSignUp(false);
+          setPassword("");
+          setLoading(false);
+          return;
+        }
+
+        toast.success("Login successful!");
+        navigate("/admin-dashboard");
       }
       setLoading(false);
       return;
     }
 
+    // Regular sign in
     const { error } = await signIn(email, password);
 
     if (error) {
