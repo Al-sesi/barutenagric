@@ -64,17 +64,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // Check for existing session first
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        setLoading(true);
+        fetchUserRole(session.user.id);
+      } else {
+        setLoading(false);
+      }
+    });
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("Auth state changed:", event, session?.user?.id);
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Keep loading true while fetching role
           setLoading(true);
-          await fetchUserRole(session.user.id);
+          fetchUserRole(session.user.id);
         } else {
           setRole(null);
           setDistrict(null);
@@ -82,18 +92,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Initial session check:", session?.user?.id);
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserRole(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
 
     return () => subscription.unsubscribe();
   }, []);
