@@ -16,6 +16,11 @@ interface Farmer {
   phone_number: string;
   primary_crop: string;
   district: string;
+  nin: string;
+  account_number: string;
+  account_name: string;
+  bank_name: string;
+  passport_url: string | null;
   created_at: string;
 }
 
@@ -32,7 +37,12 @@ export default function FarmerRegistry() {
     phone_number: "",
     primary_crop: "",
     district: userDistrict || "",
+    nin: "",
+    account_number: "",
+    account_name: "",
+    bank_name: "",
   });
+  const [passportFile, setPassportFile] = useState<File | null>(null);
 
   const fetchFarmers = async () => {
     const { data, error } = await supabase
@@ -65,8 +75,33 @@ export default function FarmerRegistry() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    let passportUrl = null;
+
+    // Upload passport if provided
+    if (passportFile) {
+      const fileExt = passportFile.name.split('.').pop();
+      const fileName = `farmer_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('passports')
+        .upload(filePath, passportFile);
+
+      if (uploadError) {
+        toast.error("Failed to upload passport");
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('passports')
+        .getPublicUrl(filePath);
+      
+      passportUrl = publicUrl;
+    }
+
     const { error } = await supabase.from("farmers").insert({
       ...formData,
+      passport_url: passportUrl,
       created_by: user?.id,
     });
 
@@ -82,7 +117,12 @@ export default function FarmerRegistry() {
       phone_number: "",
       primary_crop: "",
       district: userDistrict || "",
+      nin: "",
+      account_number: "",
+      account_name: "",
+      bank_name: "",
     });
+    setPassportFile(null);
   };
 
   if (loading) {
@@ -144,6 +184,57 @@ export default function FarmerRegistry() {
                     value={formData.primary_crop}
                     onChange={(e) => setFormData({ ...formData, primary_crop: e.target.value })}
                     className="h-12"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="nin" className="text-sm md:text-base">NIN (National Identification Number)</Label>
+                  <Input
+                    id="nin"
+                    value={formData.nin}
+                    onChange={(e) => setFormData({ ...formData, nin: e.target.value })}
+                    className="h-12"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="account_number" className="text-sm md:text-base">Account Number</Label>
+                  <Input
+                    id="account_number"
+                    value={formData.account_number}
+                    onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
+                    className="h-12"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="account_name" className="text-sm md:text-base">Account Name</Label>
+                  <Input
+                    id="account_name"
+                    value={formData.account_name}
+                    onChange={(e) => setFormData({ ...formData, account_name: e.target.value })}
+                    className="h-12"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="bank_name" className="text-sm md:text-base">Bank Name</Label>
+                  <Input
+                    id="bank_name"
+                    value={formData.bank_name}
+                    onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
+                    className="h-12"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="passport" className="text-sm md:text-base">Passport Photo</Label>
+                  <Input
+                    id="passport"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setPassportFile(e.target.files?.[0] || null)}
+                    className="h-12 cursor-pointer"
                     required
                   />
                 </div>

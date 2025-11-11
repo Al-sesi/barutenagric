@@ -37,8 +37,11 @@ export default function DistrictManagement() {
   const [newSubAdmin, setNewSubAdmin] = useState({
     email: "",
     password: "",
-    district: ""
+    district: "",
+    phone_number: "",
+    nin: ""
   });
+  const [passportFile, setPassportFile] = useState<File | null>(null);
 
   const fetchAssignments = async () => {
     const { data, error } = await supabase
@@ -81,6 +84,31 @@ export default function DistrictManagement() {
     e.preventDefault();
     setCreatingSubAdmin(true);
 
+    let passportUrl = null;
+
+    // Upload passport if provided
+    if (passportFile) {
+      const fileExt = passportFile.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('passports')
+        .upload(filePath, passportFile);
+
+      if (uploadError) {
+        toast.error("Failed to upload passport");
+        setCreatingSubAdmin(false);
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('passports')
+        .getPublicUrl(filePath);
+      
+      passportUrl = publicUrl;
+    }
+
     // Create auth user
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: newSubAdmin.email,
@@ -102,13 +130,16 @@ export default function DistrictManagement() {
       return;
     }
 
-    // Assign sub_admin role
+    // Assign sub_admin role with additional fields
     const { error: roleError } = await supabase
       .from("user_roles")
       .insert({
         user_id: authData.user.id,
         role: "sub_admin",
-        district: newSubAdmin.district
+        district: newSubAdmin.district,
+        phone_number: newSubAdmin.phone_number,
+        nin: newSubAdmin.nin,
+        passport_url: passportUrl
       });
 
     if (roleError) {
@@ -132,7 +163,8 @@ export default function DistrictManagement() {
     }
 
     toast.success("Sub-admin created successfully!");
-    setNewSubAdmin({ email: "", password: "", district: "" });
+    setNewSubAdmin({ email: "", password: "", district: "", phone_number: "", nin: "" });
+    setPassportFile(null);
     setShowCreateForm(false);
     setCreatingSubAdmin(false);
     fetchAssignments();
@@ -193,6 +225,39 @@ export default function DistrictManagement() {
                   placeholder="••••••••"
                   required
                   minLength={6}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="sub-phone">Phone Number</Label>
+                <Input
+                  id="sub-phone"
+                  type="tel"
+                  value={newSubAdmin.phone_number}
+                  onChange={(e) => setNewSubAdmin({ ...newSubAdmin, phone_number: e.target.value })}
+                  placeholder="+234..."
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="sub-nin">NIN (National Identification Number)</Label>
+                <Input
+                  id="sub-nin"
+                  type="text"
+                  value={newSubAdmin.nin}
+                  onChange={(e) => setNewSubAdmin({ ...newSubAdmin, nin: e.target.value })}
+                  placeholder="NIN Number"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="sub-passport">Passport (Required for Sub-Admins)</Label>
+                <Input
+                  id="sub-passport"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setPassportFile(e.target.files?.[0] || null)}
+                  required
+                  className="cursor-pointer"
                 />
               </div>
               <div className="space-y-2">

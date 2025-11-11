@@ -40,29 +40,44 @@ export type Database = {
       }
       farmers: {
         Row: {
+          account_name: string | null
+          account_number: string | null
+          bank_name: string | null
           created_at: string | null
           created_by: string | null
           district: string
           full_name: string
           id: string
+          nin: string | null
+          passport_url: string | null
           phone_number: string
           primary_crop: string
         }
         Insert: {
+          account_name?: string | null
+          account_number?: string | null
+          bank_name?: string | null
           created_at?: string | null
           created_by?: string | null
           district: string
           full_name: string
           id?: string
+          nin?: string | null
+          passport_url?: string | null
           phone_number: string
           primary_crop: string
         }
         Update: {
+          account_name?: string | null
+          account_number?: string | null
+          bank_name?: string | null
           created_at?: string | null
           created_by?: string | null
           district?: string
           full_name?: string
           id?: string
+          nin?: string | null
+          passport_url?: string | null
           phone_number?: string
           primary_crop?: string
         }
@@ -133,6 +148,9 @@ export type Database = {
           created_at: string | null
           district: string | null
           id: string
+          nin: string | null
+          passport_url: string | null
+          phone_number: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
@@ -140,6 +158,9 @@ export type Database = {
           created_at?: string | null
           district?: string | null
           id?: string
+          nin?: string | null
+          passport_url?: string | null
+          phone_number?: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
@@ -147,6 +168,9 @@ export type Database = {
           created_at?: string | null
           district?: string | null
           id?: string
+          nin?: string | null
+          passport_url?: string | null
+          phone_number?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }

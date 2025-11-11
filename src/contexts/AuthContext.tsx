@@ -27,6 +27,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserRole = async (userId: string) => {
     try {
       console.log("Fetching role for user:", userId);
+      
+      // Add delay to ensure role is committed to database
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
       const { data, error } = await supabase
         .from("user_roles")
         .select("role, district")
