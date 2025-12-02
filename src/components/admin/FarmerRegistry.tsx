@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { collection, addDoc, getDocs, query, where, orderBy, Timestamp } from "firebase/firestore";
+import { firestore } from "@/integrations/firebase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -45,67 +46,58 @@ export default function FarmerRegistry() {
   const [passportFile, setPassportFile] = useState<File | null>(null);
 
   const fetchFarmers = async () => {
-    const { data, error } = await supabase
-      .from("farmers")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
+    try {
+      const farmersCol = collection(firestore, "farmers");
+      let q = query(farmersCol);
+      if (role === "sub_admin" && userDistrict) {
+        q = query(farmersCol, where("district", "==", userDistrict));
+      }
+      const snap = await getDocs(q);
+      const rows: Farmer[] = snap.docs.map((d) => {
+        const data = d.data() as any;
+        return {
+          id: d.id,
+          full_name: data.full_name,
+          phone_number: data.phone_number,
+          primary_crop: data.primary_crop ?? "",
+          district: data.district,
+          nin: data.nin,
+          account_number: data.account_number,
+          account_name: data.account_name,
+          bank_name: data.bank_name,
+          passport_url: data.passport_url ?? null,
+          created_at: data.created_at?.toDate?.().toISOString?.() ?? new Date().toISOString(),
+        };
+      });
+      setFarmers(rows);
+      setLoading(false);
+    } catch (e) {
       toast.error("Failed to load farmers");
-      return;
     }
-
-    setFarmers(data || []);
-    setLoading(false);
   };
 
   useEffect(() => {
     fetchFarmers();
-
-    const channel = supabase
-      .channel("farmers_changes")
-      .on("postgres_changes", { event: "*", schema: "public", table: "farmers" }, fetchFarmers)
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+  }, [role, userDistrict]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     let passportUrl = null;
 
-    // Upload passport if provided
+    // Upload handling is deferred to backend; store placeholder URL
     if (passportFile) {
-      const fileExt = passportFile.name.split('.').pop();
-      const fileName = `farmer_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('passports')
-        .upload(filePath, passportFile);
-
-      if (uploadError) {
-        toast.error("Failed to upload passport");
-        return;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('passports')
-        .getPublicUrl(filePath);
-      
-      passportUrl = publicUrl;
+      passportUrl = "placeholder";
     }
 
-    const { error } = await supabase.from("farmers").insert({
-      ...formData,
-      passport_url: passportUrl,
-      created_by: user?.id,
-    });
-
-    if (error) {
+    try {
+      await addDoc(collection(firestore, "farmers"), {
+        ...formData,
+        passport_url: passportUrl,
+        created_by: user?.uid,
+        created_at: Timestamp.now(),
+      });
+    } catch (e) {
       toast.error("Failed to register farmer");
       return;
     }

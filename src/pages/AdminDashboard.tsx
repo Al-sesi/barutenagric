@@ -8,30 +8,30 @@ import { LogOut, Menu } from "lucide-react";
 import { toast } from "sonner";
 import IncomingOrders from "@/components/admin/IncomingOrders";
 import FarmerRegistry from "@/components/admin/FarmerRegistry";
-import DistrictManagement from "@/components/admin/DistrictManagement";
+import SubAdminManagement from "@/components/admin/SubAdminManagement";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function AdminDashboard() {
-  const { user, role, loading, signOut } = useAuth();
+  const { user, role, loading, initialized, signOut } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState("orders");
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (initialized && !user) {
       navigate("/admin-login");
-    } else if (!loading && user && !role) {
-      toast.error("No admin role assigned to this account. Please contact support.");
-      handleSignOut();
     }
-  }, [user, loading, role, navigate]);
+    if (initialized && user && !role) {
+      toast.error("No admin role assigned to this account. Please contact support.");
+    }
+  }, [initialized, user, role, navigate]);
 
   const handleSignOut = async () => {
     await signOut();
     navigate("/admin-login");
   };
 
-  if (loading) {
+  if (!initialized || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-lg">Loading...</p>
@@ -39,8 +39,18 @@ export default function AdminDashboard() {
     );
   }
 
-  if (!user || !role) {
+  if (!user) {
     return null;
+  }
+  if (!role) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="max-w-md text-center space-y-4">
+          <p className="text-lg">No admin role assigned to this account. Please contact support.</p>
+          <Button variant="outline" onClick={handleSignOut}>Sign Out</Button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -84,7 +94,7 @@ export default function AdminDashboard() {
                 <SelectItem value="orders">Incoming Orders</SelectItem>
                 <SelectItem value="farmers">Farmer Registry</SelectItem>
                 {role === "general_admin" && (
-                  <SelectItem value="districts">District Management</SelectItem>
+                  <SelectItem value="subadmins">Sub-Admin Management</SelectItem>
                 )}
               </SelectContent>
             </Select>
@@ -94,7 +104,7 @@ export default function AdminDashboard() {
               <TabsTrigger value="orders">Incoming Orders</TabsTrigger>
               <TabsTrigger value="farmers">Farmer Registry</TabsTrigger>
               {role === "general_admin" && (
-                <TabsTrigger value="districts">District Management</TabsTrigger>
+                <TabsTrigger value="subadmins">Sub-Admin Management</TabsTrigger>
               )}
             </TabsList>
           )}
@@ -108,8 +118,8 @@ export default function AdminDashboard() {
           </TabsContent>
 
           {role === "general_admin" && (
-            <TabsContent value="districts" className="mt-4 md:mt-6">
-              <DistrictManagement />
+            <TabsContent value="subadmins" className="mt-4 md:mt-6">
+              <SubAdminManagement />
             </TabsContent>
           )}
         </Tabs>

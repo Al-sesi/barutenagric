@@ -29,32 +29,34 @@ export default function IncomingOrders() {
   const { role } = useAuth();
 
   const fetchInquiries = async () => {
-    const { data, error } = await supabase
-      .from("inquiries")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      toast.error("Failed to load orders");
-      return;
+    try {
+      const { data, error } = await supabase
+        .from("inquiries")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      setInquiries(data || []);
+    } catch (e) {
+      toast.error("Orders not accessible. Ensure Supabase policies allow admin read.");
+    } finally {
+      setLoading(false);
     }
-
-    setInquiries(data || []);
-    setLoading(false);
   };
 
   useEffect(() => {
-    fetchInquiries();
-
-    const channel = supabase
-      .channel("inquiries_changes")
-      .on("postgres_changes", { event: "*", schema: "public", table: "inquiries" }, fetchInquiries)
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+    if (role === "general_admin") {
+      fetchInquiries();
+      const channel = supabase
+        .channel("inquiries_changes")
+        .on("postgres_changes", { event: "*", schema: "public", table: "inquiries" }, fetchInquiries)
+        .subscribe();
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } else {
+      setLoading(false);
+    }
+  }, [role]);
 
   const handleAssignDistrict = async (inquiryId: string, district: string) => {
     const { error } = await supabase
@@ -103,14 +105,28 @@ export default function IncomingOrders() {
     );
   }
 
+  if (role !== "general_admin") {
+    return (
+      <Card className="border-primary/20">
+        <CardHeader className="bg-primary/5">
+          <CardTitle className="text-lg md:text-xl text-primary">Incoming Orders</CardTitle>
+          <CardDescription className="text-sm">
+            Order assignment is handled centrally. Please manage farmers in your district.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">This section is restricted to General Admins.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="border-primary/20">
       <CardHeader className="bg-primary/5">
         <CardTitle className="text-lg md:text-xl text-primary">Incoming Orders</CardTitle>
         <CardDescription className="text-sm">
-          {role === "general_admin" 
-            ? "Assign orders to districts and manage all incoming requests" 
-            : "View and fulfill orders assigned to your district"}
+          Assign orders to districts and manage all incoming requests
         </CardDescription>
       </CardHeader>
       <CardContent>

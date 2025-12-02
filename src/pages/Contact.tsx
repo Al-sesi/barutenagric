@@ -5,6 +5,7 @@ import * as z from "zod";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { submitInquiry } from "@/integrations/aws/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -53,34 +54,49 @@ const Contact = () => {
       const volumeMatch = values.quantity.match(/(\d+)/);
       const volumeMt = volumeMatch ? parseInt(volumeMatch[1]) : 0;
 
-      // Save to database
-      const { error } = await supabase.from("inquiries").insert({
-        buyer_name: values.companyName,
-        buyer_email: values.email,
-        buyer_phone: values.phone,
-        crop: values.product,
-        volume_mt: volumeMt,
-        message: `Contact: ${values.contactPerson}\n\nQuantity: ${values.quantity}\n\n${values.message}`,
-      });
+      const awsUrl = import.meta.env.VITE_AWS_INQUIRY_URL as string | undefined;
 
-      if (error) throw error;
-
-      // Send email notification
-      try {
-        await supabase.functions.invoke("send-inquiry-email", {
-          body: {
-            companyName: values.companyName,
-            contactPerson: values.contactPerson,
-            email: values.email,
-            phone: values.phone,
-            product: values.product,
-            quantity: values.quantity,
-            message: values.message,
-          },
+      if (awsUrl) {
+        const response = await submitInquiry({
+          companyName: values.companyName,
+          contactPerson: values.contactPerson,
+          email: values.email,
+          phone: values.phone,
+          product: values.product,
+          quantity: values.quantity,
+          message: values.message,
         });
-      } catch (emailError) {
-        console.error("Email notification failed:", emailError);
-        // Don't block the submission if email fails
+
+        if (!response.ok) {
+          throw new Error("AWS inquiry submission failed");
+        }
+      } else {
+        const { error } = await supabase.from("inquiries").insert({
+          buyer_name: values.companyName,
+          buyer_email: values.email,
+          buyer_phone: values.phone,
+          crop: values.product,
+          volume_mt: volumeMt,
+          message: `Contact: ${values.contactPerson}\n\nQuantity: ${values.quantity}\n\n${values.message}`,
+        });
+
+        if (error) throw error;
+
+        try {
+          await supabase.functions.invoke("send-inquiry-email", {
+            body: {
+              companyName: values.companyName,
+              contactPerson: values.contactPerson,
+              email: values.email,
+              phone: values.phone,
+              product: values.product,
+              quantity: values.quantity,
+              message: values.message,
+            },
+          });
+        } catch (emailError) {
+          console.error("Email notification failed:", emailError);
+        }
       }
 
       setIsSubmitted(true);

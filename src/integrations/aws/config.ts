@@ -1,0 +1,1 @@
+export const AWS_INQUIRY_URL = import.meta.env.VITE_AWS_INQUIRY_URL as string | undefined;
