@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { User as FirebaseUser, onAuthStateChanged, signInWithEmailAndPassword, signOut as fbSignOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { firebaseAuth, firestore } from "@/integrations/firebase/client";
+import { firebaseAuth, firestore, FIREBASE_ENABLED } from "@/integrations/firebase/client";
 
 type UserRole = "general_admin" | "sub_admin" | null;
 
@@ -46,6 +46,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    if (!FIREBASE_ENABLED) {
+      setUser(null);
+      setRole(null);
+      setDistrict(null);
+      setLoading(false);
+      setInitialized(true);
+      return;
+    }
+
     const unsub = onAuthStateChanged(firebaseAuth, (fbUser) => {
       setUser(fbUser ?? null);
       if (fbUser) {
@@ -63,6 +72,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    if (!FIREBASE_ENABLED) {
+      return { error: new Error("Auth not configured") } as { error: any };
+    }
     try {
       await signInWithEmailAndPassword(firebaseAuth, email, password);
       return { error: null };
@@ -72,7 +84,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    await fbSignOut(firebaseAuth);
+    if (FIREBASE_ENABLED) {
+      await fbSignOut(firebaseAuth);
+    }
     setRole(null);
     setDistrict(null);
   };

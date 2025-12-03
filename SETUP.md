@@ -34,18 +34,7 @@ For additional admin accounts:
 
 After creating a user account, you need to assign them a role in the backend:
 
-#### Option A: Using Lovable Cloud Interface
-
-1. Open the Cloud tab in Lovable
-2. Navigate to the Database section
-3. Find the `user_roles` table
-4. Click "Insert row"
-5. Fill in the fields:
-   - `user_id`: Copy the user ID from the `profiles` table or auth logs
-   - `role`: Select either `general_admin` or `sub_admin`
-   - `district`: If creating a sub-admin, select their district (Ilesha Baruba, Gwanara, Okuta, or Yashikira)
-
-#### Option B: Using SQL
+#### Using SQL
 
 Run this query in the Cloud Database section:
 

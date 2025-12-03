@@ -10,8 +10,16 @@ const firebaseConfig = {
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
+const enabled = Boolean(
+  firebaseConfig.apiKey &&
+  firebaseConfig.authDomain &&
+  firebaseConfig.projectId &&
+  firebaseConfig.appId
+);
 
-const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+export const FIREBASE_ENABLED = enabled;
 
-export const firebaseAuth = getAuth(app);
-export const firestore = getFirestore(app);
+const app = enabled ? (getApps().length ? getApps()[0] : initializeApp(firebaseConfig)) : undefined as any;
+
+export const firebaseAuth = enabled ? getAuth(app) : (undefined as any);
+export const firestore = enabled ? getFirestore(app) : (undefined as any);
