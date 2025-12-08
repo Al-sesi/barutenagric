@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, SUPABASE_ENABLED } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
@@ -44,6 +44,11 @@ export default function DistrictManagement() {
   const [passportFile, setPassportFile] = useState<File | null>(null);
 
   const fetchAssignments = async () => {
+    if (!SUPABASE_ENABLED) {
+      toast.error("District management requires Supabase configuration");
+      setLoading(false);
+      return;
+    }
     const { data, error } = await supabase
       .from("district_assignments")
       .select("*")
@@ -65,6 +70,10 @@ export default function DistrictManagement() {
   const handleUpdateEmail = async (districtId: string, district: string) => {
     const email = editingEmail[districtId];
     if (!email) return;
+    if (!SUPABASE_ENABLED) {
+      toast.error("Supabase is not configured");
+      return;
+    }
 
     const { error } = await supabase
       .from("district_assignments")
@@ -83,6 +92,11 @@ export default function DistrictManagement() {
   const handleCreateSubAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreatingSubAdmin(true);
+    if (!SUPABASE_ENABLED) {
+      toast.error("Supabase is not configured");
+      setCreatingSubAdmin(false);
+      return;
+    }
 
     let passportUrl = null;
 
@@ -175,6 +189,16 @@ export default function DistrictManagement() {
       <Card className="border-secondary/30">
         <CardContent className="py-8">
           <p className="text-center text-muted-foreground">Loading district assignments...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!SUPABASE_ENABLED) {
+    return (
+      <Card className="border-secondary/30">
+        <CardContent className="py-8">
+          <p className="text-center text-muted-foreground">Supabase is not configured. District Management is unavailable.</p>
         </CardContent>
       </Card>
     );

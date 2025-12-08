@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, SUPABASE_ENABLED } from "@/integrations/supabase/client";
 import { submitInquiry } from "@/integrations/aws/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -70,7 +70,7 @@ const Contact = () => {
         if (!response.ok) {
           throw new Error("AWS inquiry submission failed");
         }
-      } else {
+      } else if (SUPABASE_ENABLED) {
         const { error } = await supabase.from("inquiries").insert({
           buyer_name: values.companyName,
           buyer_email: values.email,
@@ -97,6 +97,8 @@ const Contact = () => {
         } catch (emailError) {
           console.error("Email notification failed:", emailError);
         }
+      } else {
+        throw new Error("No backend configured (AWS or Supabase)");
       }
 
       setIsSubmitted(true);

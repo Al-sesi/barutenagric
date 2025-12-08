@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, SUPABASE_ENABLED } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -30,6 +30,9 @@ export default function IncomingOrders() {
 
   const fetchInquiries = async () => {
     try {
+      if (!SUPABASE_ENABLED) {
+        throw new Error("Supabase not configured");
+      }
       const { data, error } = await supabase
         .from("inquiries")
         .select("*")
@@ -45,6 +48,11 @@ export default function IncomingOrders() {
 
   useEffect(() => {
     if (role === "general_admin") {
+      if (!SUPABASE_ENABLED) {
+        setLoading(false);
+        toast.error("Orders not accessible. Supabase is not configured.");
+        return;
+      }
       fetchInquiries();
       const channel = supabase
         .channel("inquiries_changes")
@@ -59,6 +67,10 @@ export default function IncomingOrders() {
   }, [role]);
 
   const handleAssignDistrict = async (inquiryId: string, district: string) => {
+    if (!SUPABASE_ENABLED) {
+      toast.error("Supabase is not configured");
+      return;
+    }
     const { error } = await supabase
       .from("inquiries")
       .update({ assigned_district: district, status: "assigned" })
@@ -73,6 +85,10 @@ export default function IncomingOrders() {
   };
 
   const handleMarkFulfilled = async (inquiryId: string) => {
+    if (!SUPABASE_ENABLED) {
+      toast.error("Supabase is not configured");
+      return;
+    }
     const { error } = await supabase
       .from("inquiries")
       .update({ status: "fulfilled" })
