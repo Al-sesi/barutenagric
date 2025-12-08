@@ -46,7 +46,7 @@ const Produce = () => {
         <div className="container text-center px-4">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4">Our Premium Produce</h1>
           <p className="text-base sm:text-lg lg:text-xl opacity-95 max-w-3xl mx-auto">
-            Quality crops directly from the four districts of Baruten: 
+            Quality crops directly from the four districts of Barutem: 
             Ilesha Baruba, Gwanara, Okuta, and Yashikira
           </p>
         </div>

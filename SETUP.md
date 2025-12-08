@@ -1,4 +1,4 @@
-# Baruten Agricultural Portal - Admin Setup Guide
+# Barutem Agricultural Portal - Admin Setup Guide
 
 ## Overview
 
@@ -19,8 +19,8 @@ The admin portal is accessible at a secret URL:
 ### Step 2: Create Admin Accounts
 
 **Primary General Admin Account:**
-- Email: `Barutenagriculture@gmail.com`
-- Password: `Baruten1010`
+- Email: `Barutemagriculture@gmail.com`
+- Password: `Barutem1010`
 
 To set up this account:
 1. Visit `/admin-login` and sign up with the above credentials

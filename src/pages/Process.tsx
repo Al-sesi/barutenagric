@@ -13,7 +13,7 @@ const Process = () => {
     {
       icon: <GitBranch className="h-16 w-16 text-accent" />,
       title: "Centralized Coordination",
-      description: "Portal admin team efficiently allocates orders across Baruten's four supply districts based on availability and crop quality."
+      description: "Portal admin team efficiently allocates orders across Barutem's four supply districts based on availability and crop quality."
     },
     {
       icon: <CheckCircle className="h-16 w-16 text-accent" />,
@@ -87,7 +87,7 @@ const Process = () => {
             Our Supply Districts
           </h2>
           <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-            Four strategic hubs across Baruten ensure comprehensive coverage and consistent supply
+            Four strategic hubs across Barutem ensure comprehensive coverage and consistent supply
           </p>
           
           <div className="max-w-4xl mx-auto bg-card rounded-lg p-12 relative" style={{ minHeight: "400px" }}>
@@ -112,7 +112,7 @@ const Process = () => {
             
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
               <div className="bg-primary text-primary-foreground px-8 py-4 rounded-full font-bold text-lg shadow-xl">
-                Baruten Hub
+                Barutem Hub
               </div>
             </div>
           </div>
@@ -123,7 +123,7 @@ const Process = () => {
       <section className="py-20">
         <div className="container">
           <h2 className="text-4xl font-bold text-center mb-12 text-foreground">
-            The Baruten Advantage
+            The Barutem Advantage
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">

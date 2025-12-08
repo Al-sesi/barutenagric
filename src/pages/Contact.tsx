@@ -132,7 +132,7 @@ const Contact = () => {
     {
       icon: <MapPin className="h-6 w-6 text-accent" />,
       label: "Head Office",
-      value: "Kosubosu, Baruten, Kwara State",
+      value: "Kosubosu, Barutem, Kwara State",
       href: null
     },
     {

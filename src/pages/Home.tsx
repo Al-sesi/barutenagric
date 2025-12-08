@@ -49,7 +49,7 @@ const Home = () => {
         
         <div className="relative z-10 container text-center text-primary-foreground px-4">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">
-            Baruten: Your Direct Source for Premium West African Produce
+            Barutem: Your Direct Source for Premium West African Produce
           </h1>
           <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-6 sm:mb-8 max-w-3xl mx-auto opacity-95">
             Leveraging technology for transparent supply chains and guaranteed quality,
@@ -67,7 +67,7 @@ const Home = () => {
       <section className="py-12 sm:py-16 lg:py-20 bg-muted/30">
         <div className="container px-4">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-3 sm:mb-4 text-foreground">
-            Why Choose Baruten?
+            Why Choose Barutem?
           </h2>
           <p className="text-center text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto text-sm sm:text-base">
             Our commitment to excellence spans every aspect of agricultural supply

@@ -60,7 +60,7 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-center gap-2 md:gap-4">
             <div className="flex-1 min-w-0">
               <h1 className="text-base md:text-2xl font-bold text-primary truncate">
-                Baruten Agricultural Portal - Admin
+                Barutem Agricultural Portal - Admin
               </h1>
               <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
                 {user?.email || "admin@baruten.com"}

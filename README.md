@@ -1,4 +1,4 @@
-# Baruten Agric Website
+# Barutem Agric Website
 
 ## Run locally
 

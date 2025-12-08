@@ -17,7 +17,7 @@ interface DistrictAssignment {
 }
 
 const DISTRICTS = [
-  "Baruten Central",
+  "Barutem Central",
   "Gwanara",
   "Kaiama",
   "Kakabu",

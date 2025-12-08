@@ -37,7 +37,7 @@ export default function AdminLogin() {
           <CardTitle className="text-xl md:text-2xl font-bold text-primary">
             Admin Portal
           </CardTitle>
-          <CardDescription className="text-sm">Baruten Agricultural Portal</CardDescription>
+          <CardDescription className="text-sm">Barutem Agricultural Portal</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -48,7 +48,7 @@ export default function AdminLogin() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@baruten.com"
+                placeholder="admin@barutem.com"
                 className="h-12"
                 required
               />

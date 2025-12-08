@@ -28,7 +28,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Processing inquiry email:", inquiry);
 
     const emailResponse = await resend.emails.send({
-      from: "Baruten Agricultural Portal <onboarding@resend.dev>",
+      from: "Barutem Agricultural Portal <onboarding@resend.dev>",
       to: ["barutenagriculture@gmail.com"],
       subject: `New Inquiry: ${inquiry.product} - ${inquiry.companyName}`,
       html: `
@@ -48,7 +48,7 @@ const handler = async (req: Request): Promise<Response> => {
           <p>${inquiry.message.replace(/\n/g, '<br>')}</p>
         </div>
         <p style="margin-top: 20px; color: #666; font-size: 12px;">
-          This inquiry was submitted through the Baruten Agricultural Portal contact form.
+          This inquiry was submitted through the Barutem Agricultural Portal contact form.
         </p>
       `,
     });

@@ -19,8 +19,8 @@ const Header = () => {
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2 font-bold text-base sm:text-xl text-primary">
           <Sprout className="h-5 w-5 sm:h-6 sm:w-6 text-accent flex-shrink-0" />
-          <span className="hidden sm:inline">Baruten Agricultural Portal</span>
-          <span className="sm:hidden">Baruten</span>
+          <span className="hidden sm:inline">Barutem Agricultural Portal</span>
+          <span className="sm:hidden">Barutem</span>
         </Link>
         
         {/* Desktop Navigation */}
