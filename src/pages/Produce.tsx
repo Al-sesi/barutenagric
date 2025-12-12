@@ -14,10 +14,12 @@ import peppersImage from "@/assets/peppers.jpg";
 const Produce = () => {
   const [filter, setFilter] = useState("all");
 
+  const yamImageUrl = (import.meta as any).env?.VITE_YAM_IMAGE_URL || yamImage;
+
   const products = [
     { name: "Maize", image: maizeImage, quantity: "200+ MT", season: "Year-round", category: "grains" },
     { name: "Cashew Nuts", image: cashewImage, quantity: "150+ MT", season: "Feb-May", category: "nuts" },
-    { name: "Yam Tubers", image: yamImage, quantity: "180+ MT", season: "Year-round", category: "tubers" },
+    { name: "Yam Tubers", image: yamImageUrl, quantity: "180+ MT", season: "Year-round", category: "tubers" },
     { name: "Millet", image: milletImage, quantity: "120+ MT", season: "Oct-Jan", category: "grains" },
     { name: "Soybeans", image: soybeansImage, quantity: "160+ MT", season: "Year-round", category: "legumes" },
     { name: "Tomatoes", image: tomatoesImage, quantity: "100+ MT", season: "Nov-Apr", category: "vegetables" },

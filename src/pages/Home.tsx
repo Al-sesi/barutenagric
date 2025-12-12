@@ -30,10 +30,12 @@ const Home = () => {
     }
   ];
 
+  const yamImageUrl = (import.meta as any).env?.VITE_YAM_IMAGE_URL || yamImage;
+
   const featuredProducts = [
     { name: "Premium Cashew Nuts", image: cashewImage, quantity: "150+ MT" },
     { name: "Fresh Maize", image: maizeImage, quantity: "200+ MT" },
-    { name: "Quality Yam Tubers", image: yamImage, quantity: "180+ MT" }
+    { name: "Quality Yam Tubers", image: yamImageUrl, quantity: "180+ MT" }
   ];
 
   const chartConfig = {
