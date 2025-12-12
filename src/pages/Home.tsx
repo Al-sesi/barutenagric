@@ -8,6 +8,8 @@ import heroImage from "@/assets/hero-agriculture.jpg";
 import maizeImage from "@/assets/maize.jpg";
 import cashewImage from "@/assets/cashew.jpg";
 import yamImage from "@/assets/yam.jpg";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 
 const Home = () => {
   const benefits = [
@@ -32,6 +34,20 @@ const Home = () => {
     { name: "Premium Cashew Nuts", image: cashewImage, quantity: "150+ MT" },
     { name: "Fresh Maize", image: maizeImage, quantity: "200+ MT" },
     { name: "Quality Yam Tubers", image: yamImage, quantity: "180+ MT" }
+  ];
+
+  const chartConfig = {
+    maize: { label: "Maize", color: "hsl(var(--primary))" },
+    cashew: { label: "Cashew", color: "#22c55e" },
+    yam: { label: "Yam", color: "#f59e0b" }
+  };
+
+  const chartData = [
+    { month: "Jan", maize: 180, cashew: 120, yam: 140 },
+    { month: "Feb", maize: 200, cashew: 130, yam: 160 },
+    { month: "Mar", maize: 220, cashew: 140, yam: 170 },
+    { month: "Apr", maize: 210, cashew: 150, yam: 165 },
+    { month: "May", maize: 230, cashew: 160, yam: 175 }
   ];
 
   return (
@@ -60,6 +76,29 @@ const Home = () => {
               Explore Our Premium Crops
             </Button>
           </Link>
+        </div>
+      </section>
+
+      <section className="py-12 sm:py-16 lg:py-20 bg-muted/30">
+        <div className="container px-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-3 sm:mb-4 text-foreground">
+            Supply Trends
+          </h2>
+          <p className="text-center text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto text-sm sm:text-base">
+            Recent indicative volumes across key crops
+          </p>
+          <ChartContainer config={chartConfig} className="mt-6">
+            <LineChart data={chartData} margin={{ left: 8, right: 8 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Line type="monotone" dataKey="maize" stroke="var(--color-maize)" dot={false} />
+              <Line type="monotone" dataKey="cashew" stroke="var(--color-cashew)" dot={false} />
+              <Line type="monotone" dataKey="yam" stroke="var(--color-yam)" dot={false} />
+              <ChartLegend verticalAlign="bottom" content={<ChartLegendContent />} />
+            </LineChart>
+          </ChartContainer>
         </div>
       </section>
 

@@ -20,6 +20,5 @@ const enabled = Boolean(
 export const FIREBASE_ENABLED = enabled;
 
 const app = enabled ? (getApps().length ? getApps()[0] : initializeApp(firebaseConfig)) : undefined as any;
-
 export const firebaseAuth = enabled ? getAuth(app) : (undefined as any);
 export const firestore = enabled ? getFirestore(app) : (undefined as any);
