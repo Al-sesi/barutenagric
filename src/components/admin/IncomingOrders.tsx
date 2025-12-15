@@ -184,7 +184,7 @@ export default function IncomingOrders() {
                           </SelectContent>
                         </Select>
                       )}
-                      {role === "sub_admin" && inquiry.status === "assigned" && (
+                      {inquiry.status === "assigned" && (
                         <Button
                           onClick={() => handleMarkFulfilled(inquiry.id)}
                           size="sm"
