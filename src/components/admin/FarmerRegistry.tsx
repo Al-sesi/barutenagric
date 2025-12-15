@@ -94,7 +94,7 @@ export default function FarmerRegistry() {
       await addDoc(collection(firestore, "farmers"), {
         ...formData,
         passport_url: passportUrl,
-        created_by: user?.uid,
+        created_by: user?.id,
         created_at: Timestamp.now(),
       });
     } catch (e) {
