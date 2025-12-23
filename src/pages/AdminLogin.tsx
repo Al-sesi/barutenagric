@@ -27,7 +27,7 @@ export default function AdminLogin() {
     }
 
     toast.success("Login successful");
-    navigate("/admin-dashboard");
+    navigate("/barutehouse");
   };
 
   return (

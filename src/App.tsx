@@ -28,7 +28,7 @@ const App = () => (
             <Route path="/process" element={<Process />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/admin-login" element={<AdminLogin />} />
-            <Route path="/admin-dashboard" element={<AdminDashboard />} />
+            <Route path="/barutehouse" element={<AdminDashboard />} />
             <Route path="/portal" element={<Portal />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
