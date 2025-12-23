@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import { collection, addDoc, getDocs, query, where, orderBy, Timestamp } from "firebase/firestore";
-import { firestore } from "@/integrations/firebase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -17,21 +15,26 @@ interface Farmer {
   phone_number: string;
   primary_crop: string;
   district: string;
-  nin: string;
-  account_number: string;
-  account_name: string;
-  bank_name: string;
+  nin: string | null;
+  account_number: string | null;
+  account_name: string | null;
+  bank_name: string | null;
   passport_url: string | null;
-  created_at: string;
+  created_at: string | null;
 }
 
 const districts = ["Ilesha Baruba", "Gwanara", "Okuta", "Yashikira"];
 
-export default function FarmerRegistry() {
+interface FarmerRegistryProps {
+  role?: "general_admin" | "sub_admin" | null;
+  userDistrict?: string | null;
+}
+
+export default function FarmerRegistry({ role, userDistrict }: FarmerRegistryProps = {}) {
   const [farmers, setFarmers] = useState<Farmer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const { role, district: userDistrict, user } = useAuth();
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -47,32 +50,22 @@ export default function FarmerRegistry() {
 
   const fetchFarmers = async () => {
     try {
-      const farmersCol = collection(firestore, "farmers");
-      let q = query(farmersCol);
+      let query = supabase.from("farmers").select("*").order("created_at", { ascending: false });
+      
       if (role === "sub_admin" && userDistrict) {
-        q = query(farmersCol, where("district", "==", userDistrict));
+        query = query.eq("district", userDistrict);
       }
-      const snap = await getDocs(q);
-      const rows: Farmer[] = snap.docs.map((d) => {
-        const data = d.data() as any;
-        return {
-          id: d.id,
-          full_name: data.full_name,
-          phone_number: data.phone_number,
-          primary_crop: data.primary_crop ?? "",
-          district: data.district,
-          nin: data.nin,
-          account_number: data.account_number,
-          account_name: data.account_name,
-          bank_name: data.bank_name,
-          passport_url: data.passport_url ?? null,
-          created_at: data.created_at?.toDate?.().toISOString?.() ?? new Date().toISOString(),
-        };
-      });
-      setFarmers(rows);
-      setLoading(false);
+      
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      
+      setFarmers(data || []);
     } catch (e) {
+      console.error("Error fetching farmers:", e);
       toast.error("Failed to load farmers");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -82,39 +75,75 @@ export default function FarmerRegistry() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    let passportUrl = null;
-
-    // Upload handling is deferred to backend; store placeholder URL
-    if (passportFile) {
-      passportUrl = "placeholder";
-    }
+    setSubmitting(true);
 
     try {
-      await addDoc(collection(firestore, "farmers"), {
-        ...formData,
-        passport_url: passportUrl,
-        created_by: user?.id,
-        created_at: Timestamp.now(),
-      });
-    } catch (e) {
-      toast.error("Failed to register farmer");
-      return;
-    }
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error("You must be logged in to register farmers");
+        setSubmitting(false);
+        return;
+      }
 
-    toast.success("Farmer registered successfully");
-    setDialogOpen(false);
-    setFormData({
-      full_name: "",
-      phone_number: "",
-      primary_crop: "",
-      district: userDistrict || "",
-      nin: "",
-      account_number: "",
-      account_name: "",
-      bank_name: "",
-    });
-    setPassportFile(null);
+      let passportUrl: string | null = null;
+
+      // Upload passport photo if provided
+      if (passportFile) {
+        const fileExt = passportFile.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("farmer-passports")
+          .upload(fileName, passportFile);
+
+        if (uploadError) {
+          console.error("Upload error:", uploadError);
+          // Continue without passport - don't block registration
+        } else {
+          const { data: urlData } = supabase.storage
+            .from("farmer-passports")
+            .getPublicUrl(fileName);
+          passportUrl = urlData.publicUrl;
+        }
+      }
+
+      const { error } = await supabase.from("farmers").insert({
+        full_name: formData.full_name,
+        phone_number: formData.phone_number,
+        primary_crop: formData.primary_crop,
+        district: formData.district,
+        nin: formData.nin || null,
+        account_number: formData.account_number || null,
+        account_name: formData.account_name || null,
+        bank_name: formData.bank_name || null,
+        passport_url: passportUrl,
+        created_by: user.id,
+      });
+
+      if (error) throw error;
+
+      toast.success("Farmer registered successfully");
+      setDialogOpen(false);
+      setFormData({
+        full_name: "",
+        phone_number: "",
+        primary_crop: "",
+        district: userDistrict || "",
+        nin: "",
+        account_number: "",
+        account_name: "",
+        bank_name: "",
+      });
+      setPassportFile(null);
+      fetchFarmers();
+    } catch (e: any) {
+      console.error("Registration error:", e);
+      toast.error(e.message || "Failed to register farmer");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -186,7 +215,6 @@ export default function FarmerRegistry() {
                     value={formData.nin}
                     onChange={(e) => setFormData({ ...formData, nin: e.target.value })}
                     className="h-12"
-                    required
                   />
                 </div>
                 <div className="space-y-2">
@@ -196,7 +224,6 @@ export default function FarmerRegistry() {
                     value={formData.account_number}
                     onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
                     className="h-12"
-                    required
                   />
                 </div>
                 <div className="space-y-2">
@@ -206,7 +233,6 @@ export default function FarmerRegistry() {
                     value={formData.account_name}
                     onChange={(e) => setFormData({ ...formData, account_name: e.target.value })}
                     className="h-12"
-                    required
                   />
                 </div>
                 <div className="space-y-2">
@@ -216,18 +242,16 @@ export default function FarmerRegistry() {
                     value={formData.bank_name}
                     onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
                     className="h-12"
-                    required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="passport" className="text-sm md:text-base">Passport Photo</Label>
+                  <Label htmlFor="passport" className="text-sm md:text-base">Passport Photo (Optional)</Label>
                   <Input
                     id="passport"
                     type="file"
                     accept="image/*"
                     onChange={(e) => setPassportFile(e.target.files?.[0] || null)}
                     className="h-12 cursor-pointer"
-                    required
                   />
                 </div>
                 <div className="space-y-2">
@@ -236,6 +260,7 @@ export default function FarmerRegistry() {
                     value={formData.district}
                     onValueChange={(value) => setFormData({ ...formData, district: value })}
                     disabled={role === "sub_admin"}
+                    required
                   >
                     <SelectTrigger className="h-12">
                       <SelectValue placeholder="Select District" />
@@ -249,8 +274,8 @@ export default function FarmerRegistry() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button type="submit" className="w-full h-12">
-                  Register Farmer
+                <Button type="submit" className="w-full h-12" disabled={submitting}>
+                  {submitting ? "Registering..." : "Register Farmer"}
                 </Button>
               </form>
             </DialogContent>
@@ -258,32 +283,38 @@ export default function FarmerRegistry() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto -mx-4 md:mx-0">
-          <div className="inline-block min-w-full align-middle">
-            <Table className="min-w-[700px]">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="whitespace-nowrap">Name</TableHead>
-                  <TableHead className="whitespace-nowrap">Phone</TableHead>
-                  <TableHead className="whitespace-nowrap">Primary Crop</TableHead>
-                  <TableHead className="whitespace-nowrap">District</TableHead>
-                  <TableHead className="whitespace-nowrap">Registered</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {farmers.map((farmer) => (
-                  <TableRow key={farmer.id}>
-                    <TableCell className="font-medium whitespace-nowrap">{farmer.full_name}</TableCell>
-                    <TableCell className="whitespace-nowrap">{farmer.phone_number}</TableCell>
-                    <TableCell className="whitespace-nowrap">{farmer.primary_crop}</TableCell>
-                    <TableCell className="whitespace-nowrap">{farmer.district}</TableCell>
-                    <TableCell className="whitespace-nowrap">{new Date(farmer.created_at).toLocaleDateString()}</TableCell>
+        {farmers.length === 0 ? (
+          <p className="text-center py-8 text-muted-foreground">No farmers registered yet.</p>
+        ) : (
+          <div className="overflow-x-auto -mx-4 md:mx-0">
+            <div className="inline-block min-w-full align-middle">
+              <Table className="min-w-[700px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="whitespace-nowrap">Name</TableHead>
+                    <TableHead className="whitespace-nowrap">Phone</TableHead>
+                    <TableHead className="whitespace-nowrap">Primary Crop</TableHead>
+                    <TableHead className="whitespace-nowrap">District</TableHead>
+                    <TableHead className="whitespace-nowrap">Registered</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {farmers.map((farmer) => (
+                    <TableRow key={farmer.id}>
+                      <TableCell className="font-medium whitespace-nowrap">{farmer.full_name}</TableCell>
+                      <TableCell className="whitespace-nowrap">{farmer.phone_number}</TableCell>
+                      <TableCell className="whitespace-nowrap">{farmer.primary_crop}</TableCell>
+                      <TableCell className="whitespace-nowrap">{farmer.district}</TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {farmer.created_at ? new Date(farmer.created_at).toLocaleDateString() : "N/A"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );
