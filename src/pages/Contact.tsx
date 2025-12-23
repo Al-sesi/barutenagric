@@ -19,7 +19,21 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Mail, Phone, MapPin, Building } from "lucide-react";
+
+const transportationModes = [
+  { value: "large-truck", label: "Large Truck (15-30 Tons)" },
+  { value: "delivery-van", label: "Delivery Van (3-5 Tons)" },
+  { value: "pickup-truck", label: "Pickup Truck" },
+  { value: "self-arranged", label: "Self-Arranged Pickup" },
+] as const;
 
 const formSchema = z.object({
   companyName: z.string().trim().min(2, "Company name must be at least 2 characters").max(100, "Company name must be less than 100 characters"),
@@ -28,6 +42,7 @@ const formSchema = z.object({
   phone: z.string().trim().min(10, "Phone number must be at least 10 digits").max(20, "Phone number must be less than 20 digits"),
   product: z.string().trim().min(2, "Product interest required").max(100, "Product must be less than 100 characters"),
   quantity: z.string().trim().min(1, "Quantity required").max(50, "Quantity must be less than 50 characters"),
+  transportationMode: z.string().min(1, "Please select a mode of transportation"),
   message: z.string().trim().min(10, "Message must be at least 10 characters").max(1000, "Message must be less than 1000 characters"),
 });
 
@@ -44,6 +59,7 @@ const Contact = () => {
       phone: "",
       product: "",
       quantity: "",
+      transportationMode: "",
       message: "",
     },
   });
@@ -53,6 +69,9 @@ const Contact = () => {
       // Extract numeric value from quantity string (e.g., "50 MT" -> 50)
       const volumeMatch = values.quantity.match(/(\d+)/);
       const volumeMt = volumeMatch ? parseInt(volumeMatch[1]) : 0;
+
+      // Get transportation mode label
+      const transportLabel = transportationModes.find(t => t.value === values.transportationMode)?.label || values.transportationMode;
 
       const awsUrl = import.meta.env.VITE_AWS_INQUIRY_URL as string | undefined;
 
@@ -64,7 +83,7 @@ const Contact = () => {
           phone: values.phone,
           product: values.product,
           quantity: values.quantity,
-          message: values.message,
+          message: `Transportation: ${transportLabel}\n\n${values.message}`,
         });
 
         if (!response.ok) {
@@ -77,7 +96,7 @@ const Contact = () => {
           buyer_phone: values.phone,
           crop: values.product,
           volume_mt: volumeMt,
-          message: `Contact: ${values.contactPerson}\n\nQuantity: ${values.quantity}\n\n${values.message}`,
+          message: `Contact: ${values.contactPerson}\n\nQuantity: ${values.quantity}\n\nTransportation: ${transportLabel}\n\n${values.message}`,
         });
 
         if (error) throw error;
@@ -91,6 +110,7 @@ const Contact = () => {
               phone: values.phone,
               product: values.product,
               quantity: values.quantity,
+              transportationMode: transportLabel,
               message: values.message,
             },
           });
@@ -306,6 +326,35 @@ const Contact = () => {
                         )}
                       />
                     </div>
+
+                    <FormField
+                      control={form.control}
+                      name="transportationMode"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Mode of Transportation *</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="bg-background">
+                                <SelectValue placeholder="Select transportation mode" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-background border z-50">
+                              {transportationModes.map((mode) => (
+                                <SelectItem 
+                                  key={mode.value} 
+                                  value={mode.value}
+                                  className="hover:bg-muted"
+                                >
+                                  {mode.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
                     <FormField
                       control={form.control}
