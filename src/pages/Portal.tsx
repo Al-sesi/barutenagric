@@ -456,9 +456,8 @@ const Portal = () => {
             </TabsContent>
           )}
 
-          {/* Farmers Tab */}
           <TabsContent value="farmers">
-            <FarmerRegistry />
+            <FarmerRegistry role={role} userDistrict={district} />
           </TabsContent>
 
           {/* Districts Tab - General Admin Only */}

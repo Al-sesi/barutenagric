@@ -7,11 +7,11 @@ import Footer from "@/components/Footer";
 import heroImage from "@/assets/hero-agriculture.jpg";
 import maizeImage from "@/assets/maize.jpg";
 import cashewImage from "@/assets/cashew.jpg";
-import yamImage from "@/assets/yam.jpg";
+import yamImage from "@/assets/yam-new.jpg";
 import soybeansImage from "@/assets/soybeans.jpg";
 import milletImage from "@/assets/millet.jpg";
 import tomatoesImage from "@/assets/tomatoes.jpg";
-import peppersImage from "@/assets/peppers.jpg";
+import sheaButterImage from "@/assets/shea-butter.jpg";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
@@ -34,7 +34,7 @@ const Home = () => {
     }
   ];
 
-  const yamImageUrl = (import.meta as any).env?.VITE_YAM_IMAGE_URL || yamImage;
+  const yamImageUrl = yamImage;
 
   const produceItems = [
     { 
@@ -69,7 +69,7 @@ const Home = () => {
     },
     { 
       name: "Shea Butter", 
-      image: peppersImage, 
+      image: sheaButterImage, 
       quantity: "80+ MT",
       description: "Pure, unrefined shea butter extracted from handpicked shea nuts, prized for cosmetics and culinary applications."
     },
