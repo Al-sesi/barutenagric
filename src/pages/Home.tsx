@@ -10,7 +10,7 @@ import cashewImage from "@/assets/cashew.jpg";
 import yamImage from "@/assets/yam-new.jpg";
 import soybeansImage from "@/assets/soybeans.jpg";
 import milletImage from "@/assets/millet.jpg";
-import tomatoesImage from "@/assets/tomatoes.jpg";
+import riceImage from "@/assets/rice.jpg";
 import sheaButterImage from "@/assets/shea-butter.jpg";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
@@ -63,7 +63,7 @@ const Home = () => {
     },
     { 
       name: "Local Rice", 
-      image: tomatoesImage, 
+      image: riceImage, 
       quantity: "120+ MT",
       description: "Locally cultivated rice varieties known for their unique aroma and taste, supporting food security initiatives."
     },

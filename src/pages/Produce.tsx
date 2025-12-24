@@ -8,7 +8,7 @@ import cashewImage from "@/assets/cashew.jpg";
 import yamImage from "@/assets/yam-new.jpg";
 import milletImage from "@/assets/millet.jpg";
 import soybeansImage from "@/assets/soybeans.jpg";
-import tomatoesImage from "@/assets/tomatoes.jpg";
+import riceImage from "@/assets/rice.jpg";
 import sheaButterImage from "@/assets/shea-butter.jpg";
 
 const Produce = () => {
@@ -19,7 +19,7 @@ const Produce = () => {
     { name: "Fresh Maize", image: maizeImage, quantity: "250+ MT", season: "Year-round", category: "grains" },
     { name: "Soya Beans", image: soybeansImage, quantity: "180+ MT", season: "Year-round", category: "legumes" },
     { name: "Guinea Corn (Sorghum)", image: milletImage, quantity: "150+ MT", season: "Oct-Jan", category: "grains" },
-    { name: "Local Rice", image: tomatoesImage, quantity: "120+ MT", season: "Year-round", category: "grains" },
+    { name: "Local Rice", image: riceImage, quantity: "120+ MT", season: "Year-round", category: "grains" },
     { name: "Shea Butter", image: sheaButterImage, quantity: "80+ MT", season: "Year-round", category: "oils" },
     { name: "Cashew Nuts", image: cashewImage, quantity: "200+ MT", season: "Feb-May", category: "nuts" },
   ];
