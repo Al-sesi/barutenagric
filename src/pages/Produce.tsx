@@ -5,25 +5,23 @@ import ProductCard from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import maizeImage from "@/assets/maize.jpg";
 import cashewImage from "@/assets/cashew.jpg";
-import yamImage from "@/assets/yam.jpg";
+import yamImage from "@/assets/yam-new.jpg";
 import milletImage from "@/assets/millet.jpg";
 import soybeansImage from "@/assets/soybeans.jpg";
 import tomatoesImage from "@/assets/tomatoes.jpg";
-import peppersImage from "@/assets/peppers.jpg";
+import sheaButterImage from "@/assets/shea-butter.jpg";
 
 const Produce = () => {
   const [filter, setFilter] = useState("all");
 
-  const yamImageUrl = (import.meta as any).env?.VITE_YAM_IMAGE_URL || yamImage;
-
   const products = [
-    { name: "Maize", image: maizeImage, quantity: "200+ MT", season: "Year-round", category: "grains" },
-    { name: "Cashew Nuts", image: cashewImage, quantity: "150+ MT", season: "Feb-May", category: "nuts" },
-    { name: "Yam Tubers", image: yamImageUrl, quantity: "180+ MT", season: "Year-round", category: "tubers" },
-    { name: "Millet", image: milletImage, quantity: "120+ MT", season: "Oct-Jan", category: "grains" },
-    { name: "Soybeans", image: soybeansImage, quantity: "160+ MT", season: "Year-round", category: "legumes" },
-    { name: "Tomatoes", image: tomatoesImage, quantity: "100+ MT", season: "Nov-Apr", category: "vegetables" },
-    { name: "Peppers", image: peppersImage, quantity: "90+ MT", season: "Year-round", category: "vegetables" },
+    { name: "Premium Yam Tubers", image: yamImage, quantity: "300+ MT", season: "Year-round", category: "tubers" },
+    { name: "Fresh Maize", image: maizeImage, quantity: "250+ MT", season: "Year-round", category: "grains" },
+    { name: "Soya Beans", image: soybeansImage, quantity: "180+ MT", season: "Year-round", category: "legumes" },
+    { name: "Guinea Corn (Sorghum)", image: milletImage, quantity: "150+ MT", season: "Oct-Jan", category: "grains" },
+    { name: "Local Rice", image: tomatoesImage, quantity: "120+ MT", season: "Year-round", category: "grains" },
+    { name: "Shea Butter", image: sheaButterImage, quantity: "80+ MT", season: "Year-round", category: "oils" },
+    { name: "Cashew Nuts", image: cashewImage, quantity: "200+ MT", season: "Feb-May", category: "nuts" },
   ];
 
   const filteredProducts = filter === "all" 
@@ -32,11 +30,11 @@ const Produce = () => {
 
   const categories = [
     { id: "all", label: "All Products" },
-    { id: "grains", label: "Grains" },
-    { id: "nuts", label: "Nuts" },
     { id: "tubers", label: "Tubers" },
+    { id: "grains", label: "Grains" },
     { id: "legumes", label: "Legumes" },
-    { id: "vegetables", label: "Vegetables" },
+    { id: "oils", label: "Oils & Butters" },
+    { id: "nuts", label: "Nuts" },
   ];
 
   return (
