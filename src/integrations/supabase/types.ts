@@ -52,6 +52,7 @@ export type Database = {
           passport_url: string | null
           phone_number: string
           primary_crop: string
+          verified: boolean | null
         }
         Insert: {
           account_name?: string | null
@@ -66,6 +67,7 @@ export type Database = {
           passport_url?: string | null
           phone_number: string
           primary_crop: string
+          verified?: boolean | null
         }
         Update: {
           account_name?: string | null
@@ -80,12 +82,14 @@ export type Database = {
           passport_url?: string | null
           phone_number?: string
           primary_crop?: string
+          verified?: boolean | null
         }
         Relationships: []
       }
       inquiries: {
         Row: {
           assigned_district: string | null
+          assigned_to: string | null
           buyer_email: string
           buyer_name: string
           buyer_phone: string
@@ -98,6 +102,7 @@ export type Database = {
         }
         Insert: {
           assigned_district?: string | null
+          assigned_to?: string | null
           buyer_email: string
           buyer_name: string
           buyer_phone: string
@@ -110,6 +115,7 @@ export type Database = {
         }
         Update: {
           assigned_district?: string | null
+          assigned_to?: string | null
           buyer_email?: string
           buyer_name?: string
           buyer_phone?: string
