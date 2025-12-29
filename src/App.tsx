@@ -8,9 +8,7 @@ import Home from "./pages/Home";
 import Produce from "./pages/Produce";
 import Process from "./pages/Process";
 import Contact from "./pages/Contact";
-import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
-import Portal from "./pages/Portal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,9 +25,7 @@ const App = () => (
             <Route path="/produce" element={<Produce />} />
             <Route path="/process" element={<Process />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/admin-login" element={<AdminLogin />} />
             <Route path="/barutehouse" element={<AdminDashboard />} />
-            <Route path="/portal" element={<Portal />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
