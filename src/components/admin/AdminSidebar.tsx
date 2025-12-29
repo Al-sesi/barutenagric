@@ -1,13 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { 
-  LayoutDashboard, 
-  ShoppingCart, 
-  Users, 
-  UserCog, 
+import {
+  LayoutDashboard,
+  ShoppingCart,
+  Users,
+  UserCog,
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -35,11 +34,10 @@ interface AdminSidebarProps {
 export default function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const { role, user, userName, signOut } = useAuth();
-  const navigate = useNavigate();
 
   const handleSignOut = async () => {
+    // No route redirects: /barutehouse uses conditional rendering.
     await signOut();
-    navigate("/admin-login");
   };
 
   const filteredItems = navItems.filter(

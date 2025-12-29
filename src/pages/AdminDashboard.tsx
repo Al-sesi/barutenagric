@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useMemo, useState } from "react";
+import { useAuth, safeStorageClear } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,8 +14,12 @@ import EnhancedFarmerRegistry from "@/components/admin/EnhancedFarmerRegistry";
 import SubAdminManagement from "@/components/admin/SubAdminManagement";
 
 export default function AdminDashboard() {
-  const { user, role, district, userName, loading, initialized, signIn, signOut } = useAuth();
+  const { user, role, district, userName, signIn, signOut } = useAuth();
   const isMobile = useIsMobile();
+
+  // Conditional rendering (no redirects): login vs dashboard.
+  const isLoggedIn = useMemo(() => Boolean(user && role), [user, role]);
+
   const [activeTab, setActiveTab] = useState("overview");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -25,8 +29,7 @@ export default function AdminDashboard() {
   const [showPassword, setShowPassword] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async () => {
     setLoginLoading(true);
 
     const { error } = await signIn(email, password);
@@ -49,36 +52,33 @@ export default function AdminDashboard() {
     toast.success("Signed out successfully");
   };
 
-  // Show loading only during initial check, not indefinitely
-  if (!initialized) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
-        <div className="text-center space-y-4">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-lg text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleReset = () => {
+    safeStorageClear();
+    toast.success("Reset complete. Please sign in again.");
+    // ensure UI returns to login state immediately
+    void signOut();
+  };
 
   // Show login form if not authenticated
-  if (!user || !role) {
+  if (!isLoggedIn) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 p-4">
+      <div className="min-h-screen overflow-x-hidden flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 p-4">
         <Card className="w-full max-w-md mx-auto shadow-lg">
           <CardHeader className="text-center space-y-2 pb-6">
             <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto mb-2">
               <span className="text-primary-foreground font-bold text-2xl">B</span>
             </div>
-            <CardTitle className="text-xl md:text-2xl font-bold text-primary">
-              Admin Portal
-            </CardTitle>
-            <CardDescription className="text-sm md:text-base">
-              Barutem Agricultural Portal
-            </CardDescription>
+            <CardTitle className="text-xl md:text-2xl font-bold text-primary">Admin Portal</CardTitle>
+            <CardDescription className="text-sm md:text-base">Barutem Agricultural Portal</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleLogin} className="space-y-5">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void handleLogin();
+              }}
+              className="space-y-5"
+            >
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm md:text-base font-medium">
                   Email
@@ -126,12 +126,20 @@ export default function AdminDashboard() {
                   </Button>
                 </div>
               </div>
-              <Button 
-                type="submit" 
-                className="w-full h-12 md:h-14 text-base font-medium mt-2" 
+              <Button
+                type="submit"
+                className="w-full h-12 md:h-14 text-base font-medium mt-2"
                 disabled={loginLoading}
               >
                 {loginLoading ? "Signing in..." : "Sign In"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full min-h-[44px]"
+                onClick={handleReset}
+              >
+                Reset (Fix Loading)
               </Button>
             </form>
           </CardContent>
