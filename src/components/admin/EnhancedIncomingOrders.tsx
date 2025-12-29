@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { UserPlus } from "lucide-react";
+import { loadSubAdmins, SubAdmin } from "./SubAdminManagement";
 
 interface Inquiry {
   id: string;
@@ -26,19 +27,19 @@ interface Inquiry {
 
 const districts = ["Ilesha Baruba", "Gwanara", "Okuta", "Yashikira"];
 
-const subAdminRoles = [
-  { name: "Logistics Head", role: "logistics" },
-  { name: "Field Officer", role: "field" },
-  { name: "Quality Inspector", role: "quality" },
-  { name: "District Coordinator", role: "coordinator" },
-];
-
 export default function EnhancedIncomingOrders() {
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [loading, setLoading] = useState(true);
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
+  const [subAdmins, setSubAdmins] = useState<SubAdmin[]>([]);
   const { role } = useAuth();
+
+  // Load sub-admins from localStorage
+  useEffect(() => {
+    const loaded = loadSubAdmins();
+    setSubAdmins(loaded);
+  }, [assignDialogOpen]); // Refresh when dialog opens
 
   const fetchInquiries = async () => {
     try {
@@ -262,17 +263,23 @@ export default function EnhancedIncomingOrders() {
                                   </DialogDescription>
                                 </DialogHeader>
                                 <div className="grid gap-3 py-4">
-                                  {subAdminRoles.map((sa) => (
-                                    <Button
-                                      key={sa.role}
-                                      variant="outline"
-                                      className="justify-start h-12"
-                                      onClick={() => handleAssignToSubAdmin(sa.name)}
-                                    >
-                                      <UserPlus className="h-4 w-4 mr-2" />
-                                      {sa.name}
-                                    </Button>
-                                  ))}
+                                  {subAdmins.length === 0 ? (
+                                    <p className="text-center text-muted-foreground py-4">
+                                      No sub-admins created yet. Go to "Sub-Admins" tab to create one.
+                                    </p>
+                                  ) : (
+                                    subAdmins.map((sa) => (
+                                      <Button
+                                        key={sa.id}
+                                        variant="outline"
+                                        className="justify-start h-12"
+                                        onClick={() => handleAssignToSubAdmin(sa.name)}
+                                      >
+                                        <UserPlus className="h-4 w-4 mr-2" />
+                                        {sa.name} ({sa.district})
+                                      </Button>
+                                    ))
+                                  )}
                                 </div>
                               </DialogContent>
                             </Dialog>
@@ -301,17 +308,23 @@ export default function EnhancedIncomingOrders() {
                                 </DialogDescription>
                               </DialogHeader>
                               <div className="grid gap-3 py-4">
-                                {subAdminRoles.map((sa) => (
-                                  <Button
-                                    key={sa.role}
-                                    variant="outline"
-                                    className="justify-start h-12"
-                                    onClick={() => handleAssignToSubAdmin(sa.name)}
-                                  >
-                                    <UserPlus className="h-4 w-4 mr-2" />
-                                    {sa.name}
-                                  </Button>
-                                ))}
+                                {subAdmins.length === 0 ? (
+                                  <p className="text-center text-muted-foreground py-4">
+                                    No sub-admins created yet. Go to "Sub-Admins" tab to create one.
+                                  </p>
+                                ) : (
+                                  subAdmins.map((sa) => (
+                                    <Button
+                                      key={sa.id}
+                                      variant="outline"
+                                      className="justify-start h-12"
+                                      onClick={() => handleAssignToSubAdmin(sa.name)}
+                                    >
+                                      <UserPlus className="h-4 w-4 mr-2" />
+                                      {sa.name} ({sa.district})
+                                    </Button>
+                                  ))
+                                )}
                               </div>
                             </DialogContent>
                           </Dialog>
