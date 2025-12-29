@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Menu, X } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, Menu, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminOverview from "@/components/admin/AdminOverview";
@@ -12,52 +14,128 @@ import EnhancedFarmerRegistry from "@/components/admin/EnhancedFarmerRegistry";
 import SubAdminManagement from "@/components/admin/SubAdminManagement";
 
 export default function AdminDashboard() {
-  const { user, role, district, userName, loading, initialized, signOut } = useAuth();
-  const navigate = useNavigate();
+  const { user, role, district, userName, loading, initialized, signIn, signOut } = useAuth();
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState("overview");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    if (initialized && !user) {
-      navigate("/admin-login");
+  // Login form state
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginLoading(true);
+
+    const { error } = await signIn(email, password);
+
+    if (error) {
+      toast.error("Invalid credentials. Please check your email and password.");
+      setLoginLoading(false);
+      return;
     }
-    if (initialized && user && !role) {
-      toast.error("No admin role assigned to this account. Please contact support.");
-    }
-  }, [initialized, user, role, navigate]);
+
+    toast.success("Login successful");
+    setEmail("");
+    setPassword("");
+    setLoginLoading(false);
+  };
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/admin-login");
+    setMobileMenuOpen(false);
+    toast.success("Signed out successfully");
   };
 
-  if (!initialized || loading) {
+  // Show loading only during initial check, not indefinitely
+  if (!initialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10">
         <div className="text-center space-y-4">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-lg text-muted-foreground">Loading dashboard...</p>
+          <p className="text-lg text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
   }
 
-  if (!user) {
-    return null;
-  }
-
-  if (!role) {
+  // Show login form if not authenticated
+  if (!user || !role) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="max-w-md text-center space-y-4 p-6">
-          <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto">
-            <X className="h-8 w-8 text-destructive" />
-          </div>
-          <h2 className="text-xl font-bold text-foreground">Access Denied</h2>
-          <p className="text-muted-foreground">No admin role assigned to this account. Please contact support.</p>
-          <Button variant="outline" onClick={handleSignOut}>Sign Out</Button>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 p-4">
+        <Card className="w-full max-w-md mx-auto shadow-lg">
+          <CardHeader className="text-center space-y-2 pb-6">
+            <div className="w-16 h-16 rounded-xl bg-primary flex items-center justify-center mx-auto mb-2">
+              <span className="text-primary-foreground font-bold text-2xl">B</span>
+            </div>
+            <CardTitle className="text-xl md:text-2xl font-bold text-primary">
+              Admin Portal
+            </CardTitle>
+            <CardDescription className="text-sm md:text-base">
+              Barutem Agricultural Portal
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm md:text-base font-medium">
+                  Email
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="admin@barutem.com"
+                    className="h-12 md:h-14 pl-10 text-base"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm md:text-base font-medium">
+                  Password
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="h-12 md:h-14 pl-10 pr-12 text-base"
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full h-12 md:h-14 text-base font-medium mt-2" 
+                disabled={loginLoading}
+              >
+                {loginLoading ? "Signing in..." : "Sign In"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -98,6 +176,7 @@ export default function AdminDashboard() {
               <Button
                 variant="ghost"
                 size="icon"
+                className="h-11 w-11"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
                 {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -121,7 +200,7 @@ export default function AdminDashboard() {
                       setActiveTab(item.value);
                       setMobileMenuOpen(false);
                     }}
-                    className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors ${
+                    className={`w-full text-left px-4 py-3 min-h-[44px] rounded-lg font-medium transition-colors ${
                       activeTab === item.value
                         ? "bg-primary text-primary-foreground"
                         : "text-muted-foreground hover:bg-muted"
@@ -131,11 +210,13 @@ export default function AdminDashboard() {
                   </button>
                 ))}
                 <div className="pt-4 border-t border-border mt-4">
-                  <p className="text-sm text-muted-foreground px-4 mb-2">{userName || (user && 'email' in user ? user.email : 'Admin')}</p>
+                  <p className="text-sm text-muted-foreground px-4 mb-2">
+                    {userName || (user && 'email' in user ? user.email : 'Admin')}
+                  </p>
                   <Button
                     variant="outline"
                     onClick={handleSignOut}
-                    className="w-full border-destructive/50 text-destructive"
+                    className="w-full min-h-[44px] border-destructive/50 text-destructive"
                   >
                     Sign Out
                   </Button>
@@ -147,7 +228,7 @@ export default function AdminDashboard() {
       )}
 
       {/* Main Content */}
-      <main className={`flex-1 ${isMobile ? "pt-16" : ""}`}>
+      <main className={`flex-1 ${isMobile ? "pt-16" : ""} overflow-x-hidden`}>
         <div className="p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
           {renderContent()}
         </div>

@@ -1,9 +1,19 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase, SUPABASE_ENABLED } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-import { loadSubAdmins, SubAdmin } from "@/components/admin/SubAdminManagement";
 
 type UserRole = "general_admin" | "sub_admin" | null;
+
+interface SubAdmin {
+  id: string;
+  email: string;
+  password: string;
+  phone: string;
+  nin: string;
+  passport_url?: string;
+  district: string;
+  name: string;
+}
 
 interface LocalSubAdminUser {
   id: string;
@@ -14,7 +24,6 @@ interface LocalSubAdminUser {
 
 interface AuthContextType {
   user: SupabaseUser | LocalSubAdminUser | null;
-  session: null;
   role: UserRole;
   district: string | null;
   userName: string | null;
@@ -27,154 +36,86 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const LOCAL_SESSION_KEY = "baruten_local_session";
+const SUB_ADMINS_KEY = "baruten_sub_admins";
+
+// General Admin hardcoded credentials
+const GENERAL_ADMIN_EMAIL = "barutenagriculture@gmail.com";
+const GENERAL_ADMIN_PASSWORD = "Baruten1010";
+
+// Helper to load sub-admins from localStorage
+const loadSubAdmins = (): SubAdmin[] => {
+  try {
+    const stored = localStorage.getItem(SUB_ADMINS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<SupabaseUser | LocalSubAdminUser | null>(null);
-  const [session] = useState<null>(null);
   const [role, setRole] = useState<UserRole>(null);
   const [district, setDistrict] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
 
-  const fetchUserRole = async (userId: string, userEmail?: string) => {
-    try {
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("role,district")
-        .eq("user_id", userId)
-        .maybeSingle();
-      if (error) throw error;
-      if (data) {
-        setRole((data.role as UserRole) ?? null);
-        setDistrict(data.district ?? null);
-      } else {
-        // Fallback: default admin by email even if role record missing
-        const email = userEmail?.toLowerCase() ?? "";
-        if (email === "barutenagriculture@gmail.com") {
-          setRole("general_admin");
-          setDistrict(null);
-          setUserName("General Admin");
-        } else {
-          setRole(null);
-          setDistrict(null);
-        }
-      }
-    } catch (err) {
-      console.error("Exception fetching user role:", err);
-      // Graceful fallback for default admin
-      const email = userEmail?.toLowerCase() ?? "";
-      if (email === "barutenagriculture@gmail.com") {
-        setRole("general_admin");
-        setDistrict(null);
-        setUserName("General Admin");
-      } else {
-        setRole(null);
-        setDistrict(null);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Check for locally stored sub-admin session
-  const checkLocalSession = () => {
-    try {
-      const stored = localStorage.getItem(LOCAL_SESSION_KEY);
-      if (stored) {
-        const localUser = JSON.parse(stored) as LocalSubAdminUser;
-        // Verify this sub-admin still exists
-        const subAdmins = loadSubAdmins();
-        const exists = subAdmins.find(sa => sa.id === localUser.id);
-        if (exists) {
-          setUser(localUser);
-          setRole("sub_admin");
-          setDistrict(localUser.district);
-          setUserName(localUser.name);
-          return true;
-        } else {
-          localStorage.removeItem(LOCAL_SESSION_KEY);
-        }
-      }
-    } catch {
-      localStorage.removeItem(LOCAL_SESSION_KEY);
-    }
-    return false;
-  };
-
+  // Check for existing session on mount
   useEffect(() => {
-    if (!SUPABASE_ENABLED) {
-      // Check for local sub-admin session first
-      checkLocalSession();
+    const checkExistingSession = () => {
+      try {
+        const stored = localStorage.getItem(LOCAL_SESSION_KEY);
+        if (stored) {
+          const session = JSON.parse(stored);
+          if (session.role === "general_admin") {
+            setUser({ id: "general_admin", email: GENERAL_ADMIN_EMAIL, name: "General Admin", district: "" } as LocalSubAdminUser);
+            setRole("general_admin");
+            setDistrict(null);
+            setUserName("General Admin");
+          } else if (session.role === "sub_admin") {
+            const subAdmins = loadSubAdmins();
+            const subAdmin = subAdmins.find(sa => sa.id === session.id);
+            if (subAdmin) {
+              setUser({ id: subAdmin.id, email: subAdmin.email, name: subAdmin.name, district: subAdmin.district });
+              setRole("sub_admin");
+              setDistrict(subAdmin.district);
+              setUserName(subAdmin.name);
+            } else {
+              localStorage.removeItem(LOCAL_SESSION_KEY);
+            }
+          }
+        }
+      } catch {
+        localStorage.removeItem(LOCAL_SESSION_KEY);
+      }
       setLoading(false);
       setInitialized(true);
-      return;
-    }
-
-    const init = async () => {
-      // Check for local sub-admin session first
-      if (checkLocalSession()) {
-        setLoading(false);
-        setInitialized(true);
-        return;
-      }
-
-      const { data: userData } = await supabase.auth.getUser();
-      const currentUser = userData.user ?? null;
-      setUser(currentUser);
-      if (currentUser) {
-        setLoading(true);
-        await fetchUserRole(currentUser.id, currentUser.email ?? undefined);
-        if (currentUser.email?.toLowerCase() === "barutenagriculture@gmail.com") {
-          setUserName("General Admin");
-        }
-      } else {
-        setRole(null);
-        setDistrict(null);
-        setLoading(false);
-      }
-      setInitialized(true);
     };
-    init();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      // If we have a local session, ignore Supabase auth changes
-      const hasLocalSession = localStorage.getItem(LOCAL_SESSION_KEY);
-      if (hasLocalSession) return;
-
-      if (event === "SIGNED_OUT") {
-        setUser(null);
-        setRole(null);
-        setDistrict(null);
-        setUserName(null);
-        setLoading(false);
-        return;
-      }
-
-      const nextUser = session?.user ?? user;
-      if (nextUser && 'email' in nextUser) {
-        setUser(nextUser as SupabaseUser);
-        setLoading(true);
-        fetchUserRole((nextUser as SupabaseUser).id, (nextUser as SupabaseUser).email ?? undefined);
-        if ((nextUser as SupabaseUser).email?.toLowerCase() === "barutenagriculture@gmail.com") {
-          setUserName("General Admin");
-        }
-      } else {
-        setRole(null);
-        setDistrict(null);
-        setLoading(false);
-      }
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
+    // Run immediately, no async operations
+    checkExistingSession();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<{ error: Error | null }> => {
     const emailLower = email.toLowerCase().trim();
 
-    // First check if this is a local sub-admin
+    // 1. First check hardcoded General Admin credentials
+    if (emailLower === GENERAL_ADMIN_EMAIL.toLowerCase() && password === GENERAL_ADMIN_PASSWORD) {
+      const localUser: LocalSubAdminUser = {
+        id: "general_admin",
+        email: GENERAL_ADMIN_EMAIL,
+        name: "General Admin",
+        district: "",
+      };
+      localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify({ role: "general_admin", id: "general_admin" }));
+      setUser(localUser);
+      setRole("general_admin");
+      setDistrict(null);
+      setUserName("General Admin");
+      return { error: null };
+    }
+
+    // 2. Check localStorage for Sub-Admin credentials
     const subAdmins = loadSubAdmins();
     const matchingSubAdmin = subAdmins.find(
       sa => sa.email.toLowerCase() === emailLower && sa.password === password
@@ -187,36 +128,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         name: matchingSubAdmin.name,
         district: matchingSubAdmin.district,
       };
-      localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify(localUser));
+      localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify({ role: "sub_admin", id: matchingSubAdmin.id }));
       setUser(localUser);
       setRole("sub_admin");
       setDistrict(matchingSubAdmin.district);
       setUserName(matchingSubAdmin.name);
-      setLoading(false);
       return { error: null };
     }
 
-    // If not a local sub-admin, try Supabase auth (for General Admin)
-    if (!SUPABASE_ENABLED) {
-      return { error: new Error("Invalid credentials") };
+    // 3. Fallback: Try Supabase auth for General Admin (backup)
+    if (SUPABASE_ENABLED) {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (!error && data.user) {
+          // Check if it's the general admin email via Supabase
+          if (data.user.email?.toLowerCase() === GENERAL_ADMIN_EMAIL.toLowerCase()) {
+            const localUser: LocalSubAdminUser = {
+              id: "general_admin",
+              email: GENERAL_ADMIN_EMAIL,
+              name: "General Admin",
+              district: "",
+            };
+            localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify({ role: "general_admin", id: "general_admin" }));
+            setUser(localUser);
+            setRole("general_admin");
+            setDistrict(null);
+            setUserName("General Admin");
+            return { error: null };
+          }
+        }
+        // If Supabase auth succeeded but not for our admin, sign out
+        if (data.user) {
+          await supabase.auth.signOut();
+        }
+      } catch (e) {
+        console.error("Supabase auth error:", e);
+      }
     }
 
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      return { error } as { error: Error | null };
-    } catch (e) {
-      const err = e instanceof Error ? e : new Error("Unknown auth error");
-      return { error: err };
-    }
+    return { error: new Error("Invalid credentials") };
   };
 
   const signOut = async () => {
-    // Clear local session
     localStorage.removeItem(LOCAL_SESSION_KEY);
-
+    
     if (SUPABASE_ENABLED) {
-      await supabase.auth.signOut();
+      try {
+        await supabase.auth.signOut();
+      } catch {
+        // Ignore Supabase signout errors
+      }
     }
+    
     setUser(null);
     setRole(null);
     setDistrict(null);
@@ -225,7 +188,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, session, role, district, userName, loading, initialized, signIn, signOut }}
+      value={{ user, role, district, userName, loading, initialized, signIn, signOut }}
     >
       {children}
     </AuthContext.Provider>
@@ -239,3 +202,6 @@ export function useAuth() {
   }
   return context;
 }
+
+export { loadSubAdmins, SUB_ADMINS_KEY };
+export type { SubAdmin };
