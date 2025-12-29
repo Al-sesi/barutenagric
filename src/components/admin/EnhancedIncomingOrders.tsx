@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { toast } from "sonner";
 import { UserPlus } from "lucide-react";
 import { loadSubAdmins, SubAdmin } from "./SubAdminManagement";
+import { useIsMobile } from "@/hooks/use-mobile";
+import OrderCard from "./OrderCard";
 
 interface Inquiry {
   id: string;
@@ -28,6 +30,7 @@ interface Inquiry {
 const districts = ["Ilesha Baruba", "Gwanara", "Okuta", "Yashikira"];
 
 export default function EnhancedIncomingOrders() {
+  const isMobile = useIsMobile();
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [loading, setLoading] = useState(true);
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
@@ -203,29 +206,44 @@ export default function EnhancedIncomingOrders() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Buyer Name</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Crop</TableHead>
-                <TableHead>Volume</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>District</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {inquiries.length === 0 ? (
+        {inquiries.length === 0 ? (
+          <p className="text-center py-8 text-muted-foreground">No orders yet</p>
+        ) : isMobile ? (
+          // Mobile Card Layout
+          <div className="grid gap-4">
+            {inquiries.map((inquiry) => (
+              <OrderCard
+                key={inquiry.id}
+                inquiry={inquiry}
+                isSubAdmin={isSubAdmin}
+                districts={districts}
+                onAssignDistrict={handleAssignDistrict}
+                onOpenAssignDialog={(inq) => {
+                  setSelectedInquiry(inq);
+                  setAssignDialogOpen(true);
+                }}
+                onMarkFulfilled={handleMarkFulfilled}
+              />
+            ))}
+          </div>
+        ) : (
+          // Desktop Table Layout
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                    No orders yet
-                  </TableCell>
+                  <TableHead>Buyer Name</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Crop</TableHead>
+                  <TableHead>Volume</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>District</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Action</TableHead>
                 </TableRow>
-              ) : (
-                inquiries.map((inquiry) => (
+              </TableHeader>
+              <TableBody>
+                {inquiries.map((inquiry) => (
                   <TableRow key={inquiry.id}>
                     <TableCell className="font-medium">{inquiry.buyer_name}</TableCell>
                     <TableCell>
@@ -244,7 +262,7 @@ export default function EnhancedIncomingOrders() {
                         {!isSubAdmin && inquiry.status === "new" && (
                           <>
                             <Select onValueChange={(value) => handleAssignDistrict(inquiry.id, value)}>
-                              <SelectTrigger className="w-[160px] h-9">
+                              <SelectTrigger className="w-[160px] h-11">
                                 <SelectValue placeholder="Assign District" />
                               </SelectTrigger>
                               <SelectContent>
@@ -255,100 +273,36 @@ export default function EnhancedIncomingOrders() {
                                 ))}
                               </SelectContent>
                             </Select>
-                            <Dialog open={assignDialogOpen && selectedInquiry?.id === inquiry.id} onOpenChange={(open) => {
-                              setAssignDialogOpen(open);
-                              if (!open) setSelectedInquiry(null);
-                            }}>
-                              <DialogTrigger asChild>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => setSelectedInquiry(inquiry)}
-                                  className="w-[160px]"
-                                >
-                                  <UserPlus className="h-4 w-4 mr-1" />
-                                  Assign to Sub-Admin
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Assign Order to Sub-Admin</DialogTitle>
-                                  <DialogDescription>
-                                    Select a sub-admin role to handle this order from {inquiry.buyer_name}
-                                  </DialogDescription>
-                                </DialogHeader>
-                                <div className="grid gap-3 py-4">
-                                  {subAdmins.length === 0 ? (
-                                    <p className="text-center text-muted-foreground py-4">
-                                      No sub-admins created yet. Go to "Sub-Admins" tab to create one.
-                                    </p>
-                                  ) : (
-                                    subAdmins.map((sa) => (
-                                      <Button
-                                        key={sa.id}
-                                        variant="outline"
-                                        className="justify-start h-12"
-                                        onClick={() => handleAssignToSubAdmin(sa.name)}
-                                      >
-                                        <UserPlus className="h-4 w-4 mr-2" />
-                                        {sa.name} ({sa.district})
-                                      </Button>
-                                    ))
-                                  )}
-                                </div>
-                              </DialogContent>
-                            </Dialog>
+                            <Button 
+                              variant="outline" 
+                              className="w-[160px] h-11"
+                              onClick={() => {
+                                setSelectedInquiry(inquiry);
+                                setAssignDialogOpen(true);
+                              }}
+                            >
+                              <UserPlus className="h-4 w-4 mr-1" />
+                              Assign to Sub-Admin
+                            </Button>
                           </>
                         )}
                         {!isSubAdmin && inquiry.status === "assigned" && !inquiry.assigned_to && (
-                          <Dialog open={assignDialogOpen && selectedInquiry?.id === inquiry.id} onOpenChange={(open) => {
-                            setAssignDialogOpen(open);
-                            if (!open) setSelectedInquiry(null);
-                          }}>
-                            <DialogTrigger asChild>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => setSelectedInquiry(inquiry)}
-                              >
-                                <UserPlus className="h-4 w-4 mr-1" />
-                                Assign to Sub-Admin
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Assign Order to Sub-Admin</DialogTitle>
-                                <DialogDescription>
-                                  Select a sub-admin role to handle this order
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="grid gap-3 py-4">
-                                {subAdmins.length === 0 ? (
-                                  <p className="text-center text-muted-foreground py-4">
-                                    No sub-admins created yet. Go to "Sub-Admins" tab to create one.
-                                  </p>
-                                ) : (
-                                  subAdmins.map((sa) => (
-                                    <Button
-                                      key={sa.id}
-                                      variant="outline"
-                                      className="justify-start h-12"
-                                      onClick={() => handleAssignToSubAdmin(sa.name)}
-                                    >
-                                      <UserPlus className="h-4 w-4 mr-2" />
-                                      {sa.name} ({sa.district})
-                                    </Button>
-                                  ))
-                                )}
-                              </div>
-                            </DialogContent>
-                          </Dialog>
+                          <Button 
+                            variant="outline" 
+                            className="h-11"
+                            onClick={() => {
+                              setSelectedInquiry(inquiry);
+                              setAssignDialogOpen(true);
+                            }}
+                          >
+                            <UserPlus className="h-4 w-4 mr-1" />
+                            Assign to Sub-Admin
+                          </Button>
                         )}
                         {(inquiry.status === "assigned" || (isSubAdmin && inquiry.assigned_to)) && inquiry.status !== "fulfilled" && (
                           <Button
                             onClick={() => handleMarkFulfilled(inquiry.id)}
-                            size="sm"
-                            variant="default"
+                            className="h-11"
                           >
                             Mark Fulfilled
                           </Button>
@@ -356,11 +310,45 @@ export default function EnhancedIncomingOrders() {
                       </div>
                     </TableCell>
                   </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+
+        {/* Assign to Sub-Admin Dialog */}
+        <Dialog open={assignDialogOpen} onOpenChange={(open) => {
+          setAssignDialogOpen(open);
+          if (!open) setSelectedInquiry(null);
+        }}>
+          <DialogContent className="max-w-[95vw] md:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Assign Order to Sub-Admin</DialogTitle>
+              <DialogDescription>
+                Select a sub-admin to handle this order{selectedInquiry ? ` from ${selectedInquiry.buyer_name}` : ''}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-3 py-4">
+              {subAdmins.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4">
+                  No sub-admins created yet. Go to "Sub-Admins" tab to create one.
+                </p>
+              ) : (
+                subAdmins.map((sa) => (
+                  <Button
+                    key={sa.id}
+                    variant="outline"
+                    className="justify-start h-12"
+                    onClick={() => handleAssignToSubAdmin(sa.name)}
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    {sa.name} ({sa.district})
+                  </Button>
                 ))
               )}
-            </TableBody>
-          </Table>
-        </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
