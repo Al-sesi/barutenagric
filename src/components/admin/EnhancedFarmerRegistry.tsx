@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Download, CheckCircle, XCircle, UserPlus } from "lucide-react";
+import { loadSubAdmins } from "./SubAdminManagement";
 
 interface Farmer {
   id: string;
@@ -24,6 +25,7 @@ interface Farmer {
   bank_name: string | null;
   passport_url: string | null;
   created_at: string | null;
+  created_by: string | null;
   verified: boolean;
 }
 
@@ -35,6 +37,7 @@ interface EnhancedFarmerRegistryProps {
 }
 
 export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedFarmerRegistryProps = {}) {
+  const { user, userName } = useAuth();
   const [farmers, setFarmers] = useState<Farmer[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -82,9 +85,21 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
     setSubmitting(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // Get the user ID - could be from Supabase auth or local sub-admin
+      let userId: string | null = null;
       
-      if (!user) {
+      // Check if user is from local auth (sub-admin)
+      if (user && 'id' in user) {
+        userId = user.id;
+      }
+      
+      // If not from local, try Supabase auth
+      if (!userId) {
+        const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+        userId = supabaseUser?.id ?? null;
+      }
+      
+      if (!userId) {
         toast.error("You must be logged in to register farmers");
         setSubmitting(false);
         return;
@@ -94,7 +109,7 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
 
       if (passportFile) {
         const fileExt = passportFile.name.split('.').pop();
-        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        const fileName = `${userId}/${Date.now()}.${fileExt}`;
         
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from("passports")
@@ -120,7 +135,7 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
         account_name: formData.account_name || null,
         bank_name: formData.bank_name || null,
         passport_url: passportUrl,
-        created_by: user.id,
+        created_by: userId,
         verified: false,
       });
 
@@ -174,7 +189,7 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
       return;
     }
 
-    const headers = ["Name", "Phone", "Primary Crop", "District", "NIN", "Bank", "Account Name", "Account Number", "Verified", "Registered Date"];
+    const headers = ["Name", "Phone", "Primary Crop", "District", "NIN", "Bank", "Account Name", "Account Number", "Verified", "Registered Date", "Registered By"];
     const csvContent = [
       headers.join(","),
       ...farmers.map(farmer => [
@@ -187,7 +202,8 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
         `"${farmer.account_name || ''}"`,
         `"${farmer.account_number || ''}"`,
         farmer.verified ? "Yes" : "No",
-        farmer.created_at ? new Date(farmer.created_at).toLocaleDateString() : "N/A"
+        farmer.created_at ? new Date(farmer.created_at).toLocaleDateString() : "N/A",
+        `"${getRegisteredByName(farmer.created_by)}"`
       ].join(","))
     ].join("\n");
 
@@ -202,6 +218,19 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
     document.body.removeChild(link);
 
     toast.success("Farmer database exported successfully");
+  };
+
+  // Helper to get registered by name
+  const getRegisteredByName = (createdBy: string | null): string => {
+    if (!createdBy) return "Unknown";
+    
+    // Check if it's a sub-admin
+    const subAdmins = loadSubAdmins();
+    const subAdmin = subAdmins.find(sa => sa.id === createdBy);
+    if (subAdmin) return subAdmin.name;
+    
+    // Otherwise it's likely the General Admin
+    return "General Admin";
   };
 
   if (loading) {
@@ -227,14 +256,16 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
             </CardDescription>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button 
-              variant="outline" 
-              onClick={exportToCSV}
-              className="gap-2"
-            >
-              <Download className="h-4 w-4" />
-              Export Farmer Database (CSV)
-            </Button>
+            {role === "general_admin" && (
+              <Button 
+                variant="outline" 
+                onClick={exportToCSV}
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Export Farmer Database (CSV)
+              </Button>
+            )}
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="gap-2">
@@ -357,6 +388,7 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
                   <TableHead>Phone</TableHead>
                   <TableHead>Primary Crop</TableHead>
                   <TableHead>District</TableHead>
+                  <TableHead>Registered By</TableHead>
                   <TableHead>Verified</TableHead>
                   <TableHead>Registered</TableHead>
                   {role === "general_admin" && <TableHead>Action</TableHead>}
@@ -379,6 +411,11 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
                     <TableCell>{farmer.phone_number}</TableCell>
                     <TableCell>{farmer.primary_crop}</TableCell>
                     <TableCell>{farmer.district}</TableCell>
+                    <TableCell>
+                      <span className="text-sm text-muted-foreground">
+                        {getRegisteredByName(farmer.created_by)}
+                      </span>
+                    </TableCell>
                     <TableCell>
                       {farmer.verified ? (
                         <CheckCircle className="h-5 w-5 text-green-600" />
