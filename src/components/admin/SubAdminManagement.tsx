@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import SubAdminCard from "./SubAdminCard";
 
 const districts = ["Ilesha Baruba", "Gwanara", "Okuta", "Yashikira"];
 
@@ -42,6 +44,7 @@ const saveSubAdmins = (subAdmins: SubAdmin[]) => {
 
 export default function SubAdminManagement() {
   const { role } = useAuth();
+  const isMobile = useIsMobile();
   const [subAdmins, setSubAdmins] = useState<SubAdmin[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -207,7 +210,19 @@ export default function SubAdminManagement() {
       <CardContent className="pt-6">
         {subAdmins.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">No sub-admins created yet. Click "Create Sub-Admin" to add one.</p>
+        ) : isMobile ? (
+          // Mobile Card Layout
+          <div className="grid gap-4">
+            {subAdmins.map((sa) => (
+              <SubAdminCard
+                key={sa.id}
+                subAdmin={sa}
+                onDelete={handleDeleteSubAdmin}
+              />
+            ))}
+          </div>
         ) : (
+          // Desktop Table Layout
           <div className="overflow-x-auto -mx-4 md:mx-0">
             <div className="inline-block min-w-full align-middle">
               <Table className="min-w-[800px]">
@@ -232,9 +247,9 @@ export default function SubAdminManagement() {
                       <TableCell>
                         <Button 
                           variant="ghost" 
-                          size="sm" 
+                          size="icon"
+                          className="h-11 w-11 text-destructive hover:text-destructive"
                           onClick={() => handleDeleteSubAdmin(sa.id)}
-                          className="text-destructive hover:text-destructive"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

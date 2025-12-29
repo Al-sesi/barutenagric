@@ -12,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Download, CheckCircle, XCircle, UserPlus } from "lucide-react";
 import { loadSubAdmins } from "./SubAdminManagement";
+import { useIsMobile } from "@/hooks/use-mobile";
+import FarmerCard from "./FarmerCard";
 
 interface Farmer {
   id: string;
@@ -38,6 +40,7 @@ interface EnhancedFarmerRegistryProps {
 
 export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedFarmerRegistryProps = {}) {
   const { user, userName } = useAuth();
+  const isMobile = useIsMobile();
   const [farmers, setFarmers] = useState<Farmer[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -379,7 +382,21 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
       <CardContent>
         {farmers.length === 0 ? (
           <p className="text-center py-8 text-muted-foreground">No farmers registered yet.</p>
+        ) : isMobile ? (
+          // Mobile Card Layout
+          <div className="grid gap-4">
+            {farmers.map((farmer) => (
+              <FarmerCard
+                key={farmer.id}
+                farmer={farmer}
+                registeredByName={getRegisteredByName(farmer.created_by)}
+                isGeneralAdmin={role === "general_admin"}
+                onToggleVerified={handleToggleVerified}
+              />
+            ))}
+          </div>
         ) : (
+          // Desktop Table Layout
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -431,6 +448,7 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
                         <Button
                           variant={farmer.verified ? "outline" : "default"}
                           size="sm"
+                          className="h-11"
                           onClick={() => handleToggleVerified(farmer.id, farmer.verified)}
                         >
                           {farmer.verified ? "Remove Verification" : "Verify Farmer"}
