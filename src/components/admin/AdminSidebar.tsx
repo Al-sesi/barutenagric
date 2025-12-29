@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, 
   ShoppingCart, 
   Users, 
   UserCog, 
-  BarChart3, 
   LogOut,
   ChevronLeft,
   ChevronRight
@@ -26,7 +25,6 @@ const navItems: NavItem[] = [
   { title: "Incoming Orders", icon: ShoppingCart, value: "orders" },
   { title: "Farmer Registry", icon: Users, value: "farmers" },
   { title: "Sub-Admins", icon: UserCog, value: "subadmins", adminOnly: true },
-  { title: "Analytics", icon: BarChart3, value: "analytics" },
 ];
 
 interface AdminSidebarProps {
