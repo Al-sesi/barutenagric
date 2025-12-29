@@ -17,6 +17,7 @@ const STORAGE_KEY = "baruten_sub_admins";
 export interface SubAdmin {
   id: string;
   email: string;
+  password: string;
   phone: string;
   nin: string;
   passport_url: string | null;
@@ -62,14 +63,20 @@ export default function SubAdminManagement() {
   const handleCreateSubAdmin = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.email || !formData.district) {
-      toast.error("Please fill in all required fields");
+    if (!formData.name || !formData.email || !formData.password || !formData.district) {
+      toast.error("Please fill in all required fields (Name, Email, Password, District)");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
       return;
     }
 
     const newSubAdmin: SubAdmin = {
       id: crypto.randomUUID(),
       email: formData.email,
+      password: formData.password,
       phone: formData.phone,
       nin: formData.nin,
       passport_url: passportFile ? URL.createObjectURL(passportFile) : null,
@@ -135,6 +142,18 @@ export default function SubAdminManagement() {
                     value={formData.email} 
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })} 
                     className="h-12" 
+                    required 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password *</Label>
+                  <Input 
+                    id="password" 
+                    type="password"
+                    value={formData.password} 
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })} 
+                    className="h-12" 
+                    placeholder="Min 6 characters"
                     required 
                   />
                 </div>

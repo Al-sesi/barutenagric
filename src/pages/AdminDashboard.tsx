@@ -13,7 +13,7 @@ import SubAdminManagement from "@/components/admin/SubAdminManagement";
 import MarketTrendsChart from "@/components/admin/MarketTrendsChart";
 
 export default function AdminDashboard() {
-  const { user, role, district, loading, initialized, signOut } = useAuth();
+  const { user, role, district, userName, loading, initialized, signOut } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState("overview");
@@ -148,7 +148,7 @@ export default function AdminDashboard() {
                   </button>
                 ))}
                 <div className="pt-4 border-t border-border mt-4">
-                  <p className="text-sm text-muted-foreground px-4 mb-2">{user?.email}</p>
+                  <p className="text-sm text-muted-foreground px-4 mb-2">{userName || (user && 'email' in user ? user.email : 'Admin')}</p>
                   <Button
                     variant="outline"
                     onClick={handleSignOut}

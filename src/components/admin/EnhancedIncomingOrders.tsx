@@ -33,7 +33,7 @@ export default function EnhancedIncomingOrders() {
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
   const [subAdmins, setSubAdmins] = useState<SubAdmin[]>([]);
-  const { role } = useAuth();
+  const { role, userName } = useAuth();
 
   // Load sub-admins from localStorage
   useEffect(() => {
@@ -46,10 +46,18 @@ export default function EnhancedIncomingOrders() {
       if (!SUPABASE_ENABLED) {
         throw new Error("Supabase not configured");
       }
-      const { data, error } = await supabase
+      
+      let query = supabase
         .from("inquiries")
         .select("*")
         .order("created_at", { ascending: false });
+      
+      // Sub-admins only see orders assigned to them
+      if (role === "sub_admin" && userName) {
+        query = query.eq("assigned_to", userName);
+      }
+      
+      const { data, error } = await query;
       if (error) throw error;
       setInquiries(data || []);
     } catch (e) {
@@ -60,7 +68,7 @@ export default function EnhancedIncomingOrders() {
   };
 
   useEffect(() => {
-    if (role === "general_admin") {
+    if (role === "general_admin" || role === "sub_admin") {
       if (!SUPABASE_ENABLED) {
         setLoading(false);
         toast.error("Orders not accessible. Backend is not configured.");
@@ -77,7 +85,7 @@ export default function EnhancedIncomingOrders() {
     } else {
       setLoading(false);
     }
-  }, [role]);
+  }, [role, userName]);
 
   const handleAssignDistrict = async (inquiryId: string, district: string) => {
     if (!SUPABASE_ENABLED) {
@@ -163,28 +171,35 @@ export default function EnhancedIncomingOrders() {
     );
   }
 
-  if (role !== "general_admin") {
+  if (!role || (role !== "general_admin" && role !== "sub_admin")) {
     return (
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Incoming Orders</CardTitle>
           <CardDescription>
-            Order assignment is handled centrally. Please manage farmers in your district.
+            You don't have permission to view orders.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">This section is restricted to General Admins.</p>
+          <p className="text-muted-foreground">This section is restricted to admins.</p>
         </CardContent>
       </Card>
     );
   }
 
+  const isSubAdmin = role === "sub_admin";
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Recent Inquiries</CardTitle>
+        <CardTitle className="text-lg">
+          {isSubAdmin ? "My Assigned Orders" : "Recent Inquiries"}
+        </CardTitle>
         <CardDescription>
-          Assign orders to districts and sub-admins, track all incoming requests
+          {isSubAdmin 
+            ? `Orders assigned to ${userName}. Update status when fulfilled.`
+            : "Assign orders to districts and sub-admins, track all incoming requests"
+          }
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -226,7 +241,7 @@ export default function EnhancedIncomingOrders() {
                     <TableCell>{new Date(inquiry.created_at).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <div className="flex flex-col gap-2">
-                        {inquiry.status === "new" && (
+                        {!isSubAdmin && inquiry.status === "new" && (
                           <>
                             <Select onValueChange={(value) => handleAssignDistrict(inquiry.id, value)}>
                               <SelectTrigger className="w-[160px] h-9">
@@ -285,7 +300,7 @@ export default function EnhancedIncomingOrders() {
                             </Dialog>
                           </>
                         )}
-                        {inquiry.status === "assigned" && !inquiry.assigned_to && (
+                        {!isSubAdmin && inquiry.status === "assigned" && !inquiry.assigned_to && (
                           <Dialog open={assignDialogOpen && selectedInquiry?.id === inquiry.id} onOpenChange={(open) => {
                             setAssignDialogOpen(open);
                             if (!open) setSelectedInquiry(null);
@@ -329,7 +344,7 @@ export default function EnhancedIncomingOrders() {
                             </DialogContent>
                           </Dialog>
                         )}
-                        {inquiry.status === "assigned" && (
+                        {(inquiry.status === "assigned" || (isSubAdmin && inquiry.assigned_to)) && inquiry.status !== "fulfilled" && (
                           <Button
                             onClick={() => handleMarkFulfilled(inquiry.id)}
                             size="sm"

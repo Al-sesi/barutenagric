@@ -36,7 +36,7 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ activeTab, onTabChange }: AdminSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
-  const { role, user, signOut } = useAuth();
+  const { role, user, userName, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -102,7 +102,9 @@ export default function AdminSidebar({ activeTab, onTabChange }: AdminSidebarPro
       <div className="p-4 border-t border-border space-y-3">
         {!collapsed && (
           <div className="text-xs text-muted-foreground">
-            <p className="font-medium text-foreground truncate">{user?.email}</p>
+            <p className="font-medium text-foreground truncate">
+              {userName || (user && 'email' in user ? user.email : 'Admin')}
+            </p>
             <p className="capitalize">
               {role === "general_admin" ? "General Admin" : "Sub-Admin"}
             </p>
