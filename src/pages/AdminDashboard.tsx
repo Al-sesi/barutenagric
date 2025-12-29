@@ -10,7 +10,6 @@ import AdminOverview from "@/components/admin/AdminOverview";
 import EnhancedIncomingOrders from "@/components/admin/EnhancedIncomingOrders";
 import EnhancedFarmerRegistry from "@/components/admin/EnhancedFarmerRegistry";
 import SubAdminManagement from "@/components/admin/SubAdminManagement";
-import MarketTrendsChart from "@/components/admin/MarketTrendsChart";
 
 export default function AdminDashboard() {
   const { user, role, district, userName, loading, initialized, signOut } = useAuth();
@@ -66,28 +65,13 @@ export default function AdminDashboard() {
   const renderContent = () => {
     switch (activeTab) {
       case "overview":
-        return (
-          <div className="space-y-6">
-            <AdminOverview />
-            <MarketTrendsChart />
-          </div>
-        );
+        return <AdminOverview />;
       case "orders":
         return <EnhancedIncomingOrders />;
       case "farmers":
         return <EnhancedFarmerRegistry role={role} userDistrict={district} />;
       case "subadmins":
         return role === "general_admin" ? <SubAdminManagement /> : null;
-      case "analytics":
-        return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-foreground">Analytics</h2>
-              <p className="text-muted-foreground">Market trends and performance metrics</p>
-            </div>
-            <MarketTrendsChart />
-          </div>
-        );
       default:
         return <AdminOverview />;
     }
@@ -130,7 +114,6 @@ export default function AdminDashboard() {
                   { title: "Incoming Orders", value: "orders" },
                   { title: "Farmer Registry", value: "farmers" },
                   ...(role === "general_admin" ? [{ title: "Sub-Admins", value: "subadmins" }] : []),
-                  { title: "Analytics", value: "analytics" },
                 ].map((item) => (
                   <button
                     key={item.value}
