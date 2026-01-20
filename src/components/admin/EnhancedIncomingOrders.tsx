@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase, SUPABASE_ENABLED } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,7 +36,7 @@ export default function EnhancedIncomingOrders() {
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
   const [subAdmins, setSubAdmins] = useState<SubAdmin[]>([]);
-  const { role, userName } = useAuth();
+  const { role, userName, district } = useAuth();
 
   // Load sub-admins from localStorage
   useEffect(() => {
@@ -44,7 +44,7 @@ export default function EnhancedIncomingOrders() {
     setSubAdmins(loaded);
   }, [assignDialogOpen]); // Refresh when dialog opens
 
-  const fetchInquiries = async () => {
+  const fetchInquiries = useCallback(async () => {
     try {
       if (!SUPABASE_ENABLED) {
         throw new Error("Supabase not configured");
@@ -55,9 +55,9 @@ export default function EnhancedIncomingOrders() {
         .select("*")
         .order("created_at", { ascending: false });
       
-      // Sub-admins only see orders assigned to them
-      if (role === "sub_admin" && userName) {
-        query = query.eq("assigned_to", userName);
+      // Sub-admins only see orders assigned to their district
+      if (role === "sub_admin" && district) {
+        query = query.eq("assigned_district", district);
       }
       
       const { data, error } = await query;
@@ -68,7 +68,7 @@ export default function EnhancedIncomingOrders() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [role, district]);
 
   useEffect(() => {
     if (role === "general_admin" || role === "sub_admin") {
@@ -88,7 +88,7 @@ export default function EnhancedIncomingOrders() {
     } else {
       setLoading(false);
     }
-  }, [role, userName]);
+  }, [role, fetchInquiries]);
 
   const handleAssignDistrict = async (inquiryId: string, district: string) => {
     if (!SUPABASE_ENABLED) {
@@ -111,12 +111,19 @@ export default function EnhancedIncomingOrders() {
   const handleAssignToSubAdmin = async (subAdminName: string) => {
     if (!selectedInquiry || !SUPABASE_ENABLED) return;
 
+    const subAdmin = subAdmins.find(s => s.name === subAdminName);
+    const updateData: { assigned_to: string; status: string; assigned_district?: string } = { 
+      assigned_to: subAdminName, 
+      status: "assigned" 
+    };
+
+    if (subAdmin) {
+      updateData.assigned_district = subAdmin.district;
+    }
+
     const { error } = await supabase
       .from("inquiries")
-      .update({ 
-        assigned_to: subAdminName, 
-        status: "assigned" 
-      })
+      .update(updateData)
       .eq("id", selectedInquiry.id);
 
     if (error) {

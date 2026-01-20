@@ -4,15 +4,15 @@
 
 This project consists of two separate applications:
 1. **Public Site** - Marketing pages accessible to everyone (Home, Produce, Process, Contact)
-2. **Admin Portal** - Secure dashboard at `/admin-login` for managing orders and farmers
+2. **Admin Portal** - Secure dashboard at `/barutehouse` for managing orders and farmers
 
 ## Setting Up Admin Access
 
 ### Step 1: Access the Admin Login
 
 The admin portal is accessible at a secret URL:
-- **Development**: `http://localhost:8080/admin-login`
-- **Production**: `https://yourdomain.com/admin-login`
+- **Development**: `http://localhost:8080/barutehouse`
+- **Production**: `https://yourdomain.com/barutehouse`
 
 **Important:** There are NO links to this page from the public site. You must share this URL directly with authorized administrators.
 
@@ -23,7 +23,7 @@ The admin portal is accessible at a secret URL:
 - Password: `Barutem1010`
 
 To set up this account:
-1. Visit `/admin-login` and sign up with the above credentials
+1. Visit `/barutehouse` and sign up with the above credentials
 2. After signing up, assign the `general_admin` role (see Step 3)
 
 For additional admin accounts:

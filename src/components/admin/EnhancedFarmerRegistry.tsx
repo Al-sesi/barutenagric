@@ -58,7 +58,7 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
   });
   const [passportFile, setPassportFile] = useState<File | null>(null);
 
-  const fetchFarmers = async () => {
+  const fetchFarmers = useCallback(async () => {
     try {
       let query = supabase.from("farmers").select("*").order("created_at", { ascending: false });
       
@@ -77,11 +77,11 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
     } finally {
       setLoading(false);
     }
-  };
+  }, [role, userDistrict]);
 
   useEffect(() => {
     fetchFarmers();
-  }, [role, userDistrict]);
+  }, [fetchFarmers]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,9 +158,9 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
       });
       setPassportFile(null);
       fetchFarmers();
-    } catch (e: any) {
+    } catch (e) {
       console.error("Registration error:", e);
-      toast.error(e.message || "Failed to register farmer");
+      toast.error(e instanceof Error ? e.message : "Failed to register farmer");
     } finally {
       setSubmitting(false);
     }

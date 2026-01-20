@@ -19,6 +19,9 @@ const enabled = Boolean(
 
 export const FIREBASE_ENABLED = enabled;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const app = enabled ? (getApps().length ? getApps()[0] : initializeApp(firebaseConfig)) : undefined as any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const firebaseAuth = enabled ? getAuth(app) : (undefined as any);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const firestore = enabled ? getFirestore(app) : (undefined as any);

@@ -12,8 +12,6 @@ import soybeansImage from "@/assets/soybeans.jpg";
 import milletImage from "@/assets/millet.jpg";
 import riceImage from "@/assets/rice.jpg";
 import sheaButterImage from "@/assets/shea-butter.jpg";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 
 const Home = () => {
   const benefits = [
@@ -81,20 +79,7 @@ const Home = () => {
     }
   ];
 
-  const chartConfig = {
-    demand: { label: "Demand (MT)", color: "hsl(var(--primary))" },
-    price: { label: "Price Index", color: "hsl(142.1 76.2% 36.3%)" }
-  };
 
-  const chartData = [
-    { crop: "Yam", demand: 300, price: 85 },
-    { crop: "Maize", demand: 250, price: 65 },
-    { crop: "Soya", demand: 180, price: 78 },
-    { crop: "G. Corn", demand: 150, price: 55 },
-    { crop: "Rice", demand: 120, price: 90 },
-    { crop: "Shea", demand: 80, price: 95 },
-    { crop: "Cashew", demand: 200, price: 88 }
-  ];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -205,37 +190,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Market Trends Section - Moved to bottom */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-muted/30">
-        <div className="container px-4">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center mb-3 sm:mb-4 text-foreground">
-            Market Overview
-          </h2>
-          <p className="text-center text-muted-foreground mb-8 sm:mb-12 max-w-2xl mx-auto text-sm sm:text-base">
-            Current demand and price trends for our key crops
-          </p>
-          <div className="max-w-4xl mx-auto">
-            <ChartContainer config={chartConfig} className="h-[350px] sm:h-[400px]">
-              <BarChart data={chartData} margin={{ left: 12, right: 12, top: 20, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis 
-                  dataKey="crop" 
-                  tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
-                  tickLine={{ stroke: 'hsl(var(--muted-foreground))' }}
-                />
-                <YAxis 
-                  tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
-                  tickLine={{ stroke: 'hsl(var(--muted-foreground))' }}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="demand" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Demand (MT)" />
-                <Bar dataKey="price" fill="hsl(142.1 76.2% 36.3%)" radius={[4, 4, 0, 0]} name="Price Index" />
-                <ChartLegend verticalAlign="bottom" content={<ChartLegendContent />} />
-              </BarChart>
-            </ChartContainer>
-          </div>
-        </div>
-      </section>
+
 
       <Footer />
     </div>
