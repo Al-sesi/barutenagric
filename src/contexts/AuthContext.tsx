@@ -1,4 +1,5 @@
 import { createContext, useContext, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { supabase, SUPABASE_ENABLED } from "@/integrations/supabase/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
