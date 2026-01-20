@@ -264,13 +264,30 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
          <CardContent className="py-8 text-center">
            <h3 className="text-lg font-semibold text-red-800 mb-2">Database Connection Missing</h3>
            <p className="text-red-600 mb-4">The application is not connected to Supabase.</p>
+           <div className="text-left text-xs font-mono bg-white p-2 rounded border border-red-100 mt-2">
+             DEBUG INFO:<br/>
+             SUPABASE_ENABLED: {String(SUPABASE_ENABLED)}<br/>
+             Role: {role}<br/>
+             District: {userDistrict}
+           </div>
          </CardContent>
        </Card>
      );
   }
 
   return (
-    <Card className="w-full">
+    <div className="w-full space-y-4">
+      {/* Debug Overlay */}
+      <div className="bg-yellow-100 p-2 text-xs font-mono mb-4 rounded border border-yellow-300 text-black z-50 relative">
+        <strong>DEBUG MODE:</strong><br/>
+        Farmers Count: {farmers.length}<br/>
+        Loading: {String(loading)}<br/>
+        Role: {role || 'undefined'}<br/>
+        District: {userDistrict || 'undefined'}<br/>
+        Supabase: {String(SUPABASE_ENABLED)}
+      </div>
+      
+      <Card className="w-full">
       <CardHeader>
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div>
@@ -498,5 +515,6 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
         )}
       </CardContent>
     </Card>
+    </div>
   );
 }
