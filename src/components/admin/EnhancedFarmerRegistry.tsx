@@ -88,11 +88,15 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
     fetchFarmers();
   }, [fetchFarmers]);
 
+  // Add state for error display
+  const [registrationError, setRegistrationError] = useState<string | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setRegistrationError(null);
 
-    if (!SUPABASE_ENABLED || !supabase) {
+    try {if (!SUPABASE_ENABLED || !supabase) {
       toast.error("Database connection not configured");
       setSubmitting(false);
       return;
@@ -146,7 +150,8 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
         }
       }
 
-      const { error } = await supabase.from("farmers").insert({
+      // Prepare farmer data object
+      const farmerData: any = {
         full_name: formData.full_name,
         phone_number: formData.phone_number,
         primary_crop: formData.primary_crop,
@@ -156,9 +161,15 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
         account_name: formData.account_name || null,
         bank_name: formData.bank_name || null,
         passport_url: passportUrl,
-        created_by: userId, // This might be null now
         verified: false,
-      });
+      };
+
+      // Only add created_by if we have a valid UUID
+      if (userId) {
+        farmerData.created_by = userId;
+      }
+
+      const { error } = await supabase.from("farmers").insert(farmerData);
 
       if (error) {
         console.error("Supabase insert error:", error);
@@ -184,7 +195,9 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
       // Show more detailed error message
       const errorMessage = e?.message || e?.error_description || "Failed to register farmer";
       const errorDetails = e?.details ? ` (${e.details})` : "";
-      toast.error(`${errorMessage}${errorDetails}`);
+      const fullError = `${errorMessage}${errorDetails}`;
+      setRegistrationError(fullError);
+      toast.error(fullError);
     } finally {
       setSubmitting(false);
     }
@@ -322,8 +335,22 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
               <DialogContent className="max-w-[95vw] md:max-w-md max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Register New Farmer</DialogTitle>
-                  <DialogDescription>Add a farmer to the registry</DialogDescription>
+                  <DialogDescription>
+                    Add a new farmer to the database. All * marked fields are required.
+                  </DialogDescription>
                 </DialogHeader>
+
+                {registrationError && (
+                  <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-md mb-4">
+                    <div className="flex items-start gap-2">
+                      <XCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                      <div className="text-sm text-destructive font-medium break-all">
+                        {registrationError}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="full_name">Full Name</Label>
