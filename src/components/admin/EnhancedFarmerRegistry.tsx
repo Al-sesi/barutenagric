@@ -119,6 +119,13 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
         return;
       }
 
+      // Fix for hardcoded admin: "general_admin" is not a valid UUID
+      // If the database expects a UUID, we should send null or a nil UUID
+      if (userId === "general_admin") {
+        console.warn("Using 'general_admin' as ID. This may fail if DB expects UUID. Converting to null.");
+        userId = null; 
+      }
+
       let passportUrl: string | null = null;
 
       if (passportFile) {
@@ -149,11 +156,14 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
         account_name: formData.account_name || null,
         bank_name: formData.bank_name || null,
         passport_url: passportUrl,
-        created_by: userId,
+        created_by: userId, // This might be null now
         verified: false,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase insert error:", error);
+        throw error;
+      }
 
       toast.success("Farmer registered successfully");
       setDialogOpen(false);
@@ -169,9 +179,12 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
       });
       setPassportFile(null);
       fetchFarmers();
-    } catch (e) {
+    } catch (e: any) {
       console.error("Registration error:", e);
-      toast.error(e instanceof Error ? e.message : "Failed to register farmer");
+      // Show more detailed error message
+      const errorMessage = e?.message || e?.error_description || "Failed to register farmer";
+      const errorDetails = e?.details ? ` (${e.details})` : "";
+      toast.error(`${errorMessage}${errorDetails}`);
     } finally {
       setSubmitting(false);
     }
