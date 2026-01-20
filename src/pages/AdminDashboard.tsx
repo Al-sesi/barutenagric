@@ -13,6 +13,8 @@ import EnhancedIncomingOrders from "@/components/admin/EnhancedIncomingOrders";
 import EnhancedFarmerRegistry from "@/components/admin/EnhancedFarmerRegistry";
 import SubAdminManagement from "@/components/admin/SubAdminManagement";
 
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+
 export default function AdminDashboard() {
   const { user, role, district, userName, signIn, signOut } = useAuth();
   const isMobile = useIsMobile();
@@ -156,9 +158,14 @@ export default function AdminDashboard() {
         return <EnhancedIncomingOrders />;
       case "farmers":
         return (
-          <div className="w-full">
-            <EnhancedFarmerRegistry role={role} userDistrict={district} />
-          </div>
+          <ErrorBoundary>
+            <div className="w-full">
+              <div className="bg-blue-100 p-2 text-xs font-mono mb-2 text-blue-800">
+                ADMIN DASHBOARD RENDER CHECK: Farmers Tab Active
+              </div>
+              <EnhancedFarmerRegistry role={role} userDistrict={district} />
+            </div>
+          </ErrorBoundary>
         );
       case "subadmins":
         return role === "general_admin" ? <SubAdminManagement /> : null;
