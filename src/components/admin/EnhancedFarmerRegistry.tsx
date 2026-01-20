@@ -249,7 +249,7 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
 
   if (loading) {
     return (
-      <Card>
+      <Card className="w-full">
         <CardContent className="py-8">
           <p className="text-center text-muted-foreground">Loading farmers...</p>
         </CardContent>
@@ -257,8 +257,20 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
     );
   }
 
+  // Connection Check UI
+  if (!SUPABASE_ENABLED) {
+     return (
+       <Card className="w-full border-red-200 bg-red-50">
+         <CardContent className="py-8 text-center">
+           <h3 className="text-lg font-semibold text-red-800 mb-2">Database Connection Missing</h3>
+           <p className="text-red-600 mb-4">The application is not connected to Supabase.</p>
+         </CardContent>
+       </Card>
+     );
+  }
+
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div>
@@ -392,7 +404,19 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
       </CardHeader>
       <CardContent>
         {farmers.length === 0 ? (
-          <p className="text-center py-8 text-muted-foreground">No farmers registered yet.</p>
+          <div className="text-center py-12 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+             <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+               <UserPlus className="h-6 w-6 text-primary" />
+             </div>
+             <h3 className="text-lg font-medium text-slate-900">No Farmers Registered Yet</h3>
+             <p className="text-slate-500 mb-6 max-w-sm mx-auto">
+               Get started by registering your first farmer to the database.
+             </p>
+             <Button onClick={() => setDialogOpen(true)}>
+               <UserPlus className="mr-2 h-4 w-4" />
+               Register First Farmer
+             </Button>
+          </div>
         ) : isMobile ? (
           // Mobile Card Layout
           <div className="grid gap-4">

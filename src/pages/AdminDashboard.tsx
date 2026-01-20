@@ -155,7 +155,11 @@ export default function AdminDashboard() {
       case "orders":
         return <EnhancedIncomingOrders />;
       case "farmers":
-        return <EnhancedFarmerRegistry role={role} userDistrict={district} />;
+        return (
+          <div className="w-full">
+            <EnhancedFarmerRegistry role={role} userDistrict={district} />
+          </div>
+        );
       case "subadmins":
         return role === "general_admin" ? <SubAdminManagement /> : null;
       default:
