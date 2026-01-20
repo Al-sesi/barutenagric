@@ -160,9 +160,6 @@ export default function AdminDashboard() {
         return (
           <ErrorBoundary>
             <div className="w-full">
-              <div className="bg-blue-100 p-2 text-xs font-mono mb-2 text-blue-800">
-                ADMIN DASHBOARD RENDER CHECK: Farmers Tab Active
-              </div>
               <EnhancedFarmerRegistry role={role} userDistrict={district} />
             </div>
           </ErrorBoundary>

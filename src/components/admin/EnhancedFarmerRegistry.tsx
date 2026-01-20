@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase, SUPABASE_ENABLED } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -277,16 +277,6 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
 
   return (
     <div className="w-full space-y-4">
-      {/* Debug Overlay */}
-      <div className="bg-yellow-100 p-2 text-xs font-mono mb-4 rounded border border-yellow-300 text-black z-50 relative">
-        <strong>DEBUG MODE:</strong><br/>
-        Farmers Count: {farmers.length}<br/>
-        Loading: {String(loading)}<br/>
-        Role: {role || 'undefined'}<br/>
-        District: {userDistrict || 'undefined'}<br/>
-        Supabase: {String(SUPABASE_ENABLED)}
-      </div>
-      
       <Card className="w-full">
       <CardHeader>
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
