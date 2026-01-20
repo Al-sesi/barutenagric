@@ -145,8 +145,78 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string): Promise<{ error: Error | null }> => {
     const emailLower = email.toLowerCase().trim();
 
-    // 1) Hardcoded General Admin credentials (instant)
+    // 1) Try Supabase Auth first if enabled
+    if (SUPABASE_ENABLED && supabase) {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        
+        // If login successful
+        if (!error && data.user) {
+          // Check if it's the General Admin email
+          if (emailLower === GENERAL_ADMIN_EMAIL.toLowerCase()) {
+            const localUser: LocalSubAdminUser = {
+              id: data.user.id, // Use real Supabase ID
+              email: GENERAL_ADMIN_EMAIL,
+              name: "General Admin",
+              district: "",
+            };
+
+            safeStorageSet(
+              LOCAL_SESSION_KEY,
+              JSON.stringify({ role: "general_admin", id: data.user.id })
+            );
+
+            setUser(data.user); // Use the Supabase user object
+            setRole("general_admin");
+            setDistrict(null);
+            setUserName("General Admin");
+            return { error: null };
+          }
+        }
+
+        // If login failed, but it's the General Admin email, try to auto-signup (Bootstrap)
+        if (error && emailLower === GENERAL_ADMIN_EMAIL.toLowerCase()) {
+          console.log("Login failed, attempting to bootstrap General Admin account...");
+          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                full_name: "General Admin",
+                role: "general_admin"
+              }
+            }
+          });
+
+          if (!signUpError && signUpData.user) {
+            const localUser: LocalSubAdminUser = {
+              id: signUpData.user.id,
+              email: GENERAL_ADMIN_EMAIL,
+              name: "General Admin",
+              district: "",
+            };
+
+            safeStorageSet(
+              LOCAL_SESSION_KEY,
+              JSON.stringify({ role: "general_admin", id: signUpData.user.id })
+            );
+
+            setUser(signUpData.user);
+            setRole("general_admin");
+            setDistrict(null);
+            setUserName("General Admin");
+            toast.success("General Admin account created and logged in!");
+            return { error: null };
+          }
+        }
+      } catch (e) {
+        console.error("Supabase auth error:", e);
+      }
+    }
+
+    // 2) Fallback: Hardcoded General Admin credentials (Offline/Legacy)
     if (emailLower === GENERAL_ADMIN_EMAIL.toLowerCase() && password === GENERAL_ADMIN_PASSWORD) {
+      console.warn("Using offline/hardcoded admin credentials. Database features may not work.");
       const localUser: LocalSubAdminUser = {
         id: "general_admin",
         email: GENERAL_ADMIN_EMAIL,
@@ -166,7 +236,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { error: null };
     }
 
-    // 2) Local sub-admin credentials (instant)
+    // 3) Local sub-admin credentials (instant)
     const matchingSubAdmin = loadSubAdmins().find(
       (sa) => sa.email.toLowerCase() === emailLower && sa.password === password
     );
@@ -189,37 +259,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setDistrict(matchingSubAdmin.district);
       setUserName(matchingSubAdmin.name);
       return { error: null };
-    }
-
-    // 3) Optional backend auth fallback (do not block UI on mobile)
-    if (SUPABASE_ENABLED) {
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (!error && data.user?.email?.toLowerCase() === GENERAL_ADMIN_EMAIL.toLowerCase()) {
-          const localUser: LocalSubAdminUser = {
-            id: "general_admin",
-            email: GENERAL_ADMIN_EMAIL,
-            name: "General Admin",
-            district: "",
-          };
-
-          safeStorageSet(
-            LOCAL_SESSION_KEY,
-            JSON.stringify({ role: "general_admin", id: "general_admin" })
-          );
-
-          setUser(localUser);
-          setRole("general_admin");
-          setDistrict(null);
-          setUserName("General Admin");
-          return { error: null };
-        }
-
-        // If backend auth succeeded but not for our admin, immediately sign out
-        if (data.user) await supabase.auth.signOut();
-      } catch {
-        // ignore
-      }
     }
 
     return { error: new Error("Invalid credentials") };

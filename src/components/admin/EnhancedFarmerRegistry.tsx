@@ -59,6 +59,11 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
   const [passportFile, setPassportFile] = useState<File | null>(null);
 
   const fetchFarmers = useCallback(async () => {
+    if (!SUPABASE_ENABLED || !supabase) {
+      setLoading(false);
+      return;
+    }
+
     try {
       let query = supabase.from("farmers").select("*").order("created_at", { ascending: false });
       
@@ -86,6 +91,12 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+
+    if (!SUPABASE_ENABLED || !supabase) {
+      toast.error("Database connection not configured");
+      setSubmitting(false);
+      return;
+    }
 
     try {
       // Get the user ID - could be from Supabase auth or local sub-admin
@@ -167,7 +178,7 @@ export default function EnhancedFarmerRegistry({ role, userDistrict }: EnhancedF
   };
 
   const handleToggleVerified = async (farmerId: string, currentStatus: boolean) => {
-    if (!SUPABASE_ENABLED) {
+    if (!SUPABASE_ENABLED || !supabase) {
       toast.error("Backend is not configured");
       return;
     }
